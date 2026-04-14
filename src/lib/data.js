@@ -93,6 +93,7 @@ export async function fetchPets(userId) {
     pet.photo = pet.photo_url;
     pet.birth = pet.birth;
     pet.emoji = pet.emoji || '🐾';
+    pet.target_weight = pet.target_weight != null ? parseFloat(pet.target_weight) : 5.0;
   }
 
   return pets;

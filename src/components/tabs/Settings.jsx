@@ -1,8 +1,8 @@
-import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil } from "lucide-react";
+import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil, Target } from "lucide-react";
 import { T, calcAge } from "../../theme";
-import { Card, Btn, Sec } from "../ui";
+import { Card, Btn, Sec, Bar } from "../ui";
 
-export default function Settings({ pet, pets, user, age, fileRef, setModal, handleLogout, delPet }) {
+export default function Settings({ pet, pets, user, age, lw, tgt, fileRef, setModal, handleLogout, delPet }) {
   return (
     <>
       <Sec icon={<PawPrint size={14} color={T.ac} />}>プロフィール</Sec>
@@ -49,6 +49,47 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
             style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
           >
             <Pencil size={14} /> 編集
+          </Btn>
+        </div>
+      </Card>
+
+      <Sec icon={<Target size={14} color={T.gn} />}>減量目標</Sec>
+      <Card>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span style={{ fontSize: 11, color: T.tx2, fontWeight: 600 }}>目標</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: T.ac, letterSpacing: "-0.02em" }}>
+                {tgt}
+                <span style={{ fontSize: 12, color: T.tx2, marginLeft: 2 }}>kg</span>
+              </span>
+              {lw > 0 && (
+                <span style={{ fontSize: 10, color: T.tx3, fontWeight: 600 }}>
+                  / 現在 {lw}kg
+                </span>
+              )}
+            </div>
+            {lw > 0 && (
+              <div style={{ marginTop: 8 }}>
+                <Bar
+                  val={Math.max(lw - tgt, 0)}
+                  max={Math.max(lw, tgt) * 0.5}
+                  color={lw > tgt ? T.am : T.gn}
+                  h={6}
+                />
+                <div style={{ fontSize: 10, color: T.tx3, fontWeight: 600, marginTop: 4 }}>
+                  {lw > tgt ? `あと ${(lw - tgt).toFixed(1)}kg` : "目標達成 🎉"}
+                </div>
+              </div>
+            )}
+          </div>
+          <Btn
+            small
+            v="gh"
+            onClick={() => setModal({ type: "editTargetWeight" })}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+          >
+            <Pencil size={14} /> 変更
           </Btn>
         </div>
       </Card>

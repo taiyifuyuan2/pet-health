@@ -81,7 +81,7 @@ export default function App() {
   // Computed
   const age = pet ? calcAge(pet.birth) : 0;
   const lw = pet?.weights?.length ? pet.weights[pet.weights.length - 1].value : 0;
-  const tgt = 5.0;
+  const tgt = pet?.target_weight ?? 5.0;
   const abnC = pet?.labs?.reduce((s, l) => s + l.results.filter((r) => r.st !== "ok").length, 0) || 0;
   const totCost = pet?.visits?.reduce((s, v) => s + v.cost, 0) || 0;
   const nextMed = pet?.meds?.filter((m) => m.active).sort((a, b) => a.next?.localeCompare(b.next))[0];
@@ -386,6 +386,19 @@ export default function App() {
     setSaving(false);
   };
 
+  const updateTargetWeight = async (v) => {
+    if (!pet) return;
+    const n = parseFloat(v);
+    if (isNaN(n) || n <= 0) return;
+    setSaving(true);
+    try {
+      await supabase.from("pets").update({ target_weight: n }).eq("id", pet.id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
   const updatePet = async (d) => {
     if (!pet) return;
     setSaving(true);
@@ -469,6 +482,9 @@ export default function App() {
           addLab={addLab}
           addPet={addPet}
           updatePet={updatePet}
+          updateTargetWeight={updateTargetWeight}
+          lw={lw}
+          tgt={tgt}
         />
       </div>
     );
@@ -523,6 +539,8 @@ export default function App() {
               pets={pets}
               user={user}
               age={age}
+              lw={lw}
+              tgt={tgt}
               fileRef={fileRef}
               setModal={setModal}
               handleLogout={handleLogout}
@@ -554,6 +572,9 @@ export default function App() {
         addLab={addLab}
         addPet={addPet}
         updatePet={updatePet}
+        updateTargetWeight={updateTargetWeight}
+        lw={lw}
+        tgt={tgt}
       />
     </div>
   );

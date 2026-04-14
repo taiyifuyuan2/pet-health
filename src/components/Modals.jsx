@@ -20,6 +20,9 @@ export default function Modals({
   addLab,
   addPet,
   updatePet,
+  updateTargetWeight,
+  lw,
+  tgt,
 }) {
   if (!modal) return null;
 
@@ -302,6 +305,55 @@ export default function Modals({
           onChange={(e) => (s.sex = e.target.value)}
         />
         <Btn full onClick={() => { if (s.name && s.birth) addPet(s); }}>追加</Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "editTargetWeight") {
+    let v = String(tgt ?? 5.0);
+    return (
+      <Modal title="🎯 減量目標を設定" onClose={() => setModal(null)}>
+        {lw > 0 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              padding: "12px 16px",
+              background: T.card2,
+              borderRadius: 12,
+              marginBottom: 14,
+            }}
+          >
+            <span style={{ fontSize: 12, color: T.tx2, fontWeight: 600 }}>現在の体重</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: T.tx }}>{lw}kg</span>
+          </div>
+        )}
+        <Inp
+          label="目標体重 (kg)"
+          type="number"
+          step="0.1"
+          defaultValue={String(tgt ?? 5.0)}
+          onChange={(e) => (v = e.target.value)}
+        />
+        <div
+          style={{
+            padding: "10px 14px",
+            background: T.acL,
+            borderRadius: 12,
+            marginBottom: 14,
+            fontSize: 11,
+            color: T.tx2,
+            lineHeight: 1.6,
+            fontWeight: 500,
+          }}
+        >
+          <strong style={{ color: T.ac }}>参考：</strong>
+          <br />
+          ミニチュアダックスフンドの適正体重は <strong>4.5〜5.0kg</strong> 前後です。
+        </div>
+        <Btn full onClick={() => updateTargetWeight(v)}>
+          保存
+        </Btn>
       </Modal>
     );
   }
