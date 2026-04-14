@@ -81,6 +81,7 @@ export async function fetchPets(userId) {
       id: t.id,
       text: t.text,
       done: t.done,
+      due: t.due_date || null,
     }));
     pet.schedule = (schedule.data || []).map(s => ({
       id: s.id,

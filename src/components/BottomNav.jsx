@@ -4,11 +4,12 @@ import { T } from "../theme";
 const PRIMARY = [
   { id: "dash", ic: "🏠", lb: "ホーム" },
   { id: "meds", ic: "💊", lb: "お薬" },
-  { id: "labs", ic: "🔬", lb: "検査" },
-  { id: "cal", ic: "📅", lb: "通院" },
+  { id: "cal", ic: "📅", lb: "カレンダー" },
+  { id: "visits", ic: "🏥", lb: "通院" },
 ];
 
 const MORE = [
+  { id: "labs", ic: "🔬", lb: "検査" },
   { id: "food", ic: "🍽", lb: "食事" },
   { id: "wt", ic: "⚖", lb: "体重" },
   { id: "cost", ic: "💰", lb: "費用" },
@@ -110,7 +111,7 @@ export default function BottomNav({ tab, setTab }) {
             }}
           />
           <div style={{ fontSize: 13, fontWeight: 700, color: T.tx2, marginBottom: 14 }}>その他</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
             {MORE.map((t) => {
               const active = tab === t.id;
               return (

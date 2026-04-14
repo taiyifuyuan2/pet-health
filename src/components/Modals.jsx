@@ -7,6 +7,7 @@ export default function Modals({
   pet,
   recordDose,
   addTodo,
+  editTodo,
   addCondition,
   addMed,
   editMed,
@@ -36,11 +37,25 @@ export default function Modals({
   }
 
   if (modal.type === "addTodo") {
-    let val = "";
+    const s = { text: "", due: "" };
     return (
       <Modal title="✅ やること追加" onClose={() => setModal(null)}>
-        <Inp label="内容" placeholder="例: 歯科チェック" onChange={(e) => (val = e.target.value)} />
-        <Btn full onClick={() => { addTodo(val); setModal(null); }}>追加</Btn>
+        <Inp label="内容" placeholder="例: 歯科チェック" onChange={(e) => (s.text = e.target.value)} />
+        <Inp label="期日（任意）" type="date" onChange={(e) => (s.due = e.target.value)} />
+        <Btn full onClick={() => { addTodo(s.text, s.due); setModal(null); }}>追加</Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "editTodo") {
+    const todo = pet?.todos?.find((t) => t.id === modal.id);
+    if (!todo) return null;
+    const s = { text: todo.text, due: todo.due || "" };
+    return (
+      <Modal title="✅ やること編集" onClose={() => setModal(null)}>
+        <Inp label="内容" defaultValue={todo.text} onChange={(e) => (s.text = e.target.value)} />
+        <Inp label="期日（任意）" type="date" defaultValue={todo.due || ""} onChange={(e) => (s.due = e.target.value)} />
+        <Btn full onClick={() => { if (s.text) editTodo(todo.id, s); }}>保存</Btn>
       </Modal>
     );
   }

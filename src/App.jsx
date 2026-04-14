@@ -10,7 +10,8 @@ import Modals from "./components/Modals";
 import Dashboard from "./components/tabs/Dashboard";
 import Meds from "./components/tabs/Meds";
 import Labs from "./components/tabs/Labs";
-import CalendarTab from "./components/tabs/CalendarTab";
+import VisitsTab from "./components/tabs/CalendarTab";
+import Calendar from "./components/tabs/Calendar";
 import Food from "./components/tabs/Food";
 import Weight from "./components/tabs/Weight";
 import Cost from "./components/tabs/Cost";
@@ -101,14 +102,24 @@ export default function App() {
     }
   };
 
-  const addTodo = async (text) => {
+  const addTodo = async (text, due) => {
     if (!text.trim() || !pet) return;
     setSaving(true);
     try {
-      await supabase.from("todos").insert({ pet_id: pet.id, text, done: false });
+      await supabase.from("todos").insert({ pet_id: pet.id, text, done: false, due_date: due || null });
       await reload();
     } catch (err) { console.error(err); }
     setSaving(false);
+  };
+
+  const editTodo = async (id, d) => {
+    setSaving(true);
+    try {
+      await supabase.from("todos").update({ text: d.text, due_date: d.due || null }).eq("id", id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
   };
 
   const togTodo = async (todo) => {
@@ -433,6 +444,7 @@ export default function App() {
           pet={pet}
           recordDose={recordDose}
           addTodo={addTodo}
+          editTodo={editTodo}
           addCondition={addCondition}
           addMed={addMed}
           editMed={editMed}
@@ -489,8 +501,9 @@ export default function App() {
             />
           )}
           {tab === "meds" && <Meds pet={pet} setModal={setModal} delMed={delMed} delSchedule={delSchedule} />}
+          {tab === "cal" && <Calendar pet={pet} setTab={setTab} />}
+          {tab === "visits" && <VisitsTab pet={pet} setModal={setModal} delVisit={delVisit} />}
           {tab === "labs" && <Labs pet={pet} setModal={setModal} delLab={delLab} />}
-          {tab === "cal" && <CalendarTab pet={pet} setModal={setModal} delVisit={delVisit} />}
           {tab === "food" && <Food pet={pet} setModal={setModal} delFood={delFood} />}
           {tab === "wt" && <Weight pet={pet} lw={lw} tgt={tgt} setModal={setModal} delWeight={delWeight} />}
           {tab === "cost" && <Cost pet={pet} totCost={totCost} />}
@@ -518,6 +531,7 @@ export default function App() {
         pet={pet}
         recordDose={recordDose}
         addTodo={addTodo}
+        editTodo={editTodo}
         addCondition={addCondition}
         addMed={addMed}
         editMed={editMed}

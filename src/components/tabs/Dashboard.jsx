@@ -1,5 +1,114 @@
-import { T, daysTo } from "../../theme";
+import { T, daysTo, todayStr } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, IconCircle } from "../ui";
+
+function TodoRow({ t, togTodo, delTodo, setModal }) {
+  let dueLabel = null, dueColor = null, dueBg = null;
+  if (t.due && !t.done) {
+    const d = daysTo(t.due);
+    if (d < 0) {
+      dueLabel = "期限切れ";
+      dueColor = T.rd;
+      dueBg = T.rdB;
+    } else if (d === 0) {
+      dueLabel = "今日";
+      dueColor = T.rd;
+      dueBg = T.rdB;
+    } else if (d <= 3) {
+      dueLabel = `あと${d}日`;
+      dueColor = T.am;
+      dueBg = T.amB;
+    } else {
+      dueLabel = `${d}日後`;
+      dueColor = T.tx2;
+      dueBg = T.input;
+    }
+  }
+  return (
+    <div
+      className="cardHover"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        background: T.card,
+        borderRadius: 14,
+        padding: "12px 14px",
+        marginBottom: 8,
+        boxShadow: T.shadow,
+        transition: "all .25s",
+      }}
+    >
+      <div
+        onClick={() => togTodo(t)}
+        className="btnTap"
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 8,
+          flexShrink: 0,
+          border: t.done ? "none" : `2px solid ${T.bdr2}`,
+          background: t.done ? T.gr : "transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          transition: "all .2s",
+        }}
+      >
+        {t.done && <span style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>✓</span>}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <span
+          className={t.done ? "tdone" : ""}
+          style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: T.tx,
+            display: "block",
+          }}
+        >
+          {t.text}
+        </span>
+        {t.due && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            <span style={{ fontSize: 10, color: T.tx3 }}>📅 {t.due}</span>
+            {dueLabel && (
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: dueColor,
+                  background: dueBg,
+                  padding: "2px 6px",
+                  borderRadius: 6,
+                }}
+              >
+                {dueLabel}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() => setModal({ type: "editTodo", id: t.id })}
+        className="btnTap"
+        title="編集"
+        style={{
+          background: "transparent",
+          border: "none",
+          color: T.tx3,
+          fontSize: 13,
+          cursor: "pointer",
+          padding: 6,
+          borderRadius: 8,
+        }}
+      >
+        ✏️
+      </button>
+      <DelBtn onClick={() => delTodo(t.id)} />
+    </div>
+  );
+}
 
 export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDays, setModal, togTodo, delTodo, delCondition }) {
   const sevColor = (sev) => {
@@ -117,59 +226,48 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
       )}
 
       <Sec icon="✅" action={<Btn small v="gh" onClick={() => setModal({ type: "addTodo" })}>＋追加</Btn>}>やること</Sec>
-      {!pet.todos?.length ? (
-        <Empty icon="✨" text="今やることはありません" />
-      ) : (
-        pet.todos.map((t) => (
-          <div
-            key={t.id}
-            className="cardHover"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              background: T.card,
-              borderRadius: 14,
-              padding: "12px 14px",
-              marginBottom: 8,
-              boxShadow: T.shadow,
-              transition: "all .25s",
-            }}
-          >
-            <div
-              onClick={() => togTodo(t)}
-              className="btnTap"
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 8,
-                flexShrink: 0,
-                border: t.done ? "none" : `2px solid ${T.bdr2}`,
-                background: t.done ? T.gr : "transparent",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all .2s",
-              }}
-            >
-              {t.done && <span style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>✓</span>}
-            </div>
-            <span
-              className={t.done ? "tdone" : ""}
-              style={{
-                flex: 1,
-                fontSize: 13,
-                fontWeight: 600,
-                color: T.tx,
-              }}
-            >
-              {t.text}
-            </span>
-            <DelBtn onClick={() => delTodo(t.id)} />
-          </div>
-        ))
-      )}
+      {(() => {
+        const todos = pet.todos || [];
+        if (!todos.length) return <Empty icon="✨" text="今やることはありません" />;
+        const active = todos.filter((t) => !t.done);
+        const done = todos.filter((t) => t.done);
+        const withDue = active
+          .filter((t) => t.due)
+          .sort((a, b) => a.due.localeCompare(b.due));
+        const noDue = active.filter((t) => !t.due);
+        return (
+          <>
+            {withDue.length > 0 && (
+              <>
+                <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 4 }}>📅 期日あり</div>
+                {withDue.map((t) => (
+                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
+                ))}
+              </>
+            )}
+            {noDue.length > 0 && (
+              <>
+                {withDue.length > 0 && (
+                  <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 12 }}>その他</div>
+                )}
+                {noDue.map((t) => (
+                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
+                ))}
+              </>
+            )}
+            {done.length > 0 && (
+              <>
+                <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 12 }}>
+                  完了済み ({done.length})
+                </div>
+                {done.map((t) => (
+                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
+                ))}
+              </>
+            )}
+          </>
+        );
+      })()}
     </>
   );
 }
