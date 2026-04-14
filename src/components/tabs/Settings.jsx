@@ -1,10 +1,11 @@
+import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil } from "lucide-react";
 import { T, calcAge } from "../../theme";
 import { Card, Btn, Sec } from "../ui";
 
 export default function Settings({ pet, pets, user, age, fileRef, setModal, handleLogout, delPet }) {
   return (
     <>
-      <Sec icon="🐾">プロフィール</Sec>
+      <Sec icon={<PawPrint size={14} color={T.ac} />}>プロフィール</Sec>
       <Card>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <div
@@ -28,8 +29,8 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
             {pet.photo ? (
               <img src={pet.photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 26 }}>📷</div>
+              <div style={{ textAlign: "center", color: T.ac }}>
+                <Camera size={26} />
                 <div style={{ fontSize: 8, color: T.tx3, marginTop: 2 }}>タップ</div>
               </div>
             )}
@@ -41,21 +42,28 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
             </div>
             <div style={{ fontSize: 10, color: T.tx3, marginTop: 2 }}>🎂 {pet.birth}</div>
           </div>
-          <Btn small v="gh" onClick={() => setModal({ type: "editPet" })}>編集</Btn>
+          <Btn
+            small
+            v="gh"
+            onClick={() => setModal({ type: "editPet" })}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+          >
+            <Pencil size={14} /> 編集
+          </Btn>
         </div>
       </Card>
 
-      <Sec icon="🏥">かかりつけ医</Sec>
+      <Sec icon={<Stethoscope size={14} color={T.ac} />}>かかりつけ医</Sec>
       <Card>
         <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>みなみ動物クリニック</div>
         <div style={{ fontSize: 11, color: T.tx2, lineHeight: 1.7, fontWeight: 500 }}>
-          📍 鹿児島市谷山中央4丁目4954-26
+          鹿児島市谷山中央4丁目4954-26
           <br />
-          📞 099-210-5787
+          099-210-5787
         </div>
       </Card>
 
-      <Sec icon="👤">アカウント</Sec>
+      <Sec icon={<User size={14} color={T.ac} />}>アカウント</Sec>
       <Card>
         <div
           style={{
@@ -75,11 +83,11 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 16,
+              color: T.ac,
               flexShrink: 0,
             }}
           >
-            👤
+            <User size={16} />
           </div>
           <div style={{ fontSize: 12, color: T.tx2, wordBreak: "break-all" }}>{user?.email}</div>
         </div>
@@ -87,7 +95,7 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
 
       {pets.length > 1 && (
         <>
-          <Sec icon="⚠">データ管理</Sec>
+          <Sec icon={<AlertTriangle size={14} color={T.am} />}>データ管理</Sec>
           <Card>
             <Btn
               full
@@ -103,8 +111,13 @@ export default function Settings({ pet, pets, user, age, fileRef, setModal, hand
       )}
 
       <div style={{ marginTop: 24 }}>
-        <Btn full v="dn" onClick={handleLogout}>
-          ログアウト
+        <Btn
+          full
+          v="dn"
+          onClick={handleLogout}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+        >
+          <LogOut size={14} /> ログアウト
         </Btn>
       </div>
     </>

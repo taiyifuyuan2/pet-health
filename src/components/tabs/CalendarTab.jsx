@@ -1,12 +1,13 @@
+import { Stethoscope } from "lucide-react";
 import { T, todayStr } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Badge } from "../ui";
+import { Card, Btn, Sec, Empty, DelBtn, Badge, AddBtn } from "../ui";
 
 export default function CalendarTab({ pet, setModal, delVisit }) {
   const visits = (pet.visits || []).slice().sort((a, b) => b.date.localeCompare(a.date));
   const today = todayStr();
   return (
     <>
-      <Sec icon="🏥" action={<Btn small v="gh" onClick={() => setModal({ type: "addVisit" })}>＋追加</Btn>}>通院記録</Sec>
+      <Sec icon={<Stethoscope size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addVisit" })} />}>通院記録</Sec>
       {!visits.length ? (
         <Empty icon="🏥" text="通院記録はまだありません" />
       ) : (

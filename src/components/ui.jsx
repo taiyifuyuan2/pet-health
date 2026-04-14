@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Trash2, Plus } from "lucide-react";
 import { T } from "../theme";
 
 export function Card({ children, glow, bc, onClick, style, accent, hover }) {
@@ -312,10 +313,12 @@ export function DelBtn({ onClick }) {
         background: "transparent",
         border: "none",
         color: T.tx3,
-        fontSize: 14,
         cursor: "pointer",
         padding: 6,
         borderRadius: 8,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
         transition: "all .15s",
       }}
       title="削除"
@@ -328,8 +331,35 @@ export function DelBtn({ onClick }) {
         e.currentTarget.style.color = T.tx3;
       }}
     >
-      🗑
+      <Trash2 size={14} />
     </button>
+  );
+}
+
+export function AddBtn({ onClick, label = "追加" }) {
+  return (
+    <Btn small v="gh" onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+      <Plus size={14} /> {label}
+    </Btn>
+  );
+}
+
+export function IconBubble({ children, bg, size = 40 }) {
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 12,
+        background: bg || T.acL,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {children}
+    </div>
   );
 }
 

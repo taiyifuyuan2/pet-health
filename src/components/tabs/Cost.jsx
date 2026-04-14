@@ -1,3 +1,4 @@
+import { PieChart } from "lucide-react";
 import { T } from "../../theme";
 import { Card, Bar } from "../ui";
 
@@ -50,7 +51,9 @@ export default function Cost({ pet, totCost }) {
 
       {totalCat > 0 && (
         <Card>
-          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 14 }}>📊 カテゴリ別</div>
+          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
+            <PieChart size={16} color={T.ac} /> カテゴリ別
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
             <svg width="160" height="160" viewBox="0 0 160 160">
               <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.input} strokeWidth="18" />

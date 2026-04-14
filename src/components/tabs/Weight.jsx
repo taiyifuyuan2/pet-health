@@ -1,3 +1,4 @@
+import { Scale, Target, TrendingUp, TrendingDown, Plus } from "lucide-react";
 import { T } from "../../theme";
 import { Card, Btn, Sec, DelBtn } from "../ui";
 
@@ -6,7 +7,7 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
   const recent = weights.slice(-15);
   const last = weights.length >= 2 ? weights[weights.length - 1].value - weights[weights.length - 2].value : 0;
   const trendColor = last > 0 ? T.rd : last < 0 ? T.gn : T.tx2;
-  const trendIc = last > 0 ? "▲" : last < 0 ? "▼" : "—";
+  const TrendIc = last > 0 ? TrendingUp : last < 0 ? TrendingDown : null;
 
   // Chart bounds
   const allValues = recent.map((w) => w.value);
@@ -31,9 +32,19 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
           {lw}
           <span style={{ fontSize: 16, color: T.tx2, marginLeft: 4, fontWeight: 600 }}>kg</span>
         </div>
-        {last !== 0 && (
-          <div style={{ marginTop: 8, fontSize: 12, color: trendColor, fontWeight: 700 }}>
-            {trendIc} {Math.abs(last).toFixed(1)}kg 前回比
+        {last !== 0 && TrendIc && (
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: trendColor,
+              fontWeight: 700,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            <TrendIc size={14} /> {Math.abs(last).toFixed(1)}kg 前回比
           </div>
         )}
         <div
@@ -42,11 +53,14 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
             padding: "10px 14px",
             borderRadius: 12,
             background: lw > tgt ? T.amB : T.gnB,
-            display: "inline-block",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
           }}
         >
+          <Target size={14} color={lw > tgt ? T.am : T.gn} />
           <span style={{ fontSize: 12, fontWeight: 700, color: lw > tgt ? T.am : T.gn }}>
-            🎯 目標 {tgt}kg ・ あと {Math.abs(lw - tgt).toFixed(1)}kg
+            目標 {tgt}kg ・ あと {Math.abs(lw - tgt).toFixed(1)}kg
           </span>
         </div>
       </Card>
@@ -54,7 +68,7 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
       {recent.length > 1 && (
         <Card>
           <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
-            📈 体重推移
+            <TrendingUp size={16} color={T.ac} /> 体重推移
           </div>
           <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 200 }}>
             <defs>
@@ -92,7 +106,21 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
         </Card>
       )}
 
-      <Sec icon="⚖" action={<Btn small v="gh" onClick={() => setModal({ type: "addWeight" })}>＋記録</Btn>}>記録履歴</Sec>
+      <Sec
+        icon={<Scale size={14} color={T.ac} />}
+        action={
+          <Btn
+            small
+            v="gh"
+            onClick={() => setModal({ type: "addWeight" })}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+          >
+            <Plus size={14} /> 記録
+          </Btn>
+        }
+      >
+        記録履歴
+      </Sec>
       {[...weights].reverse().map((w, i, arr) => {
         const prev = arr[i + 1];
         const diff = prev ? w.value - prev.value : 0;

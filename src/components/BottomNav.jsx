@@ -1,19 +1,23 @@
 import { useState } from "react";
+import {
+  Home, Pill, Calendar, Stethoscope, MoreHorizontal, X,
+  FlaskConical, UtensilsCrossed, Scale, Coins, Settings,
+} from "lucide-react";
 import { T } from "../theme";
 
 const PRIMARY = [
-  { id: "dash", ic: "🏠", lb: "ホーム" },
-  { id: "meds", ic: "💊", lb: "お薬" },
-  { id: "cal", ic: "📅", lb: "カレンダー" },
-  { id: "visits", ic: "🏥", lb: "通院" },
+  { id: "dash", Ic: Home, lb: "ホーム" },
+  { id: "meds", Ic: Pill, lb: "お薬" },
+  { id: "cal", Ic: Calendar, lb: "カレンダー" },
+  { id: "visits", Ic: Stethoscope, lb: "通院" },
 ];
 
 const MORE = [
-  { id: "labs", ic: "🔬", lb: "検査" },
-  { id: "food", ic: "🍽", lb: "食事" },
-  { id: "wt", ic: "⚖", lb: "体重" },
-  { id: "cost", ic: "💰", lb: "費用" },
-  { id: "cfg", ic: "⚙", lb: "設定" },
+  { id: "labs", Ic: FlaskConical, lb: "検査" },
+  { id: "food", Ic: UtensilsCrossed, lb: "食事" },
+  { id: "wt", Ic: Scale, lb: "体重" },
+  { id: "cost", Ic: Coins, lb: "費用" },
+  { id: "cfg", Ic: Settings, lb: "設定" },
 ];
 
 export default function BottomNav({ tab, setTab }) {
@@ -44,18 +48,17 @@ export default function BottomNav({ tab, setTab }) {
     >
       <div
         style={{
-          padding: active ? "4px 14px" : "4px 14px",
+          padding: "4px 14px",
           borderRadius: 16,
           background: active ? T.acL : "transparent",
           transition: "background .25s",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          color: active ? T.ac : T.tx3,
         }}
       >
-        <span style={{ fontSize: 20, filter: active ? "none" : "grayscale(0.4)", opacity: active ? 1 : 0.7 }}>
-          {t.ic}
-        </span>
+        <t.Ic size={22} />
       </div>
       <span
         style={{
@@ -132,9 +135,10 @@ export default function BottomNav({ tab, setTab }) {
                     flexDirection: "column",
                     alignItems: "center",
                     gap: 6,
+                    color: active ? T.ac : T.tx3,
                   }}
                 >
-                  <span style={{ fontSize: 22 }}>{t.ic}</span>
+                  <t.Ic size={22} />
                   <span
                     style={{
                       fontSize: 11,
@@ -196,11 +200,13 @@ export default function BottomNav({ tab, setTab }) {
               borderRadius: 16,
               background: moreActive || open ? T.acL : "transparent",
               transition: "background .25s",
+              color: moreActive || open ? T.ac : T.tx3,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <span style={{ fontSize: 20, opacity: moreActive || open ? 1 : 0.7 }}>
-              {open ? "✕" : "⋯"}
-            </span>
+            {open ? <X size={22} /> : <MoreHorizontal size={22} />}
           </div>
           <span
             style={{

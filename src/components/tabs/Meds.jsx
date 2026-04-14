@@ -1,10 +1,11 @@
+import { Pill, Syringe, ShieldCheck, Calendar, Pencil } from "lucide-react";
 import { T, daysTo } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Badge, IconCircle } from "../ui";
+import { Card, Btn, Sec, Empty, DelBtn, Badge, IconCircle, AddBtn } from "../ui";
 
 export default function Meds({ pet, setModal, delMed, delSchedule }) {
   return (
     <>
-      <Sec icon="💊" action={<Btn small v="gh" onClick={() => setModal({ type: "addMed" })}>＋追加</Btn>}>お薬・予防</Sec>
+      <Sec icon={<Pill size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addMed" })} />}>お薬・予防</Sec>
       {!pet.meds?.length ? (
         <Empty icon="💊" text="お薬の登録はまだありません" />
       ) : (
@@ -23,7 +24,9 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
                 <div style={{ display: "flex", gap: 12, flex: 1, minWidth: 0 }}>
-                  <IconCircle color={now ? T.rd : T.ac} size={42}>💊</IconCircle>
+                  <IconCircle color={now ? T.rd : T.ac} size={42}>
+                    <Pill size={20} color={now ? T.rd : T.ac} />
+                  </IconCircle>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontSize: 15, fontWeight: 800, color: T.tx }}>{m.name}</div>
                     <div style={{ fontSize: 11, color: T.tx2, marginTop: 1 }}>{m.purpose}</div>
@@ -31,8 +34,13 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
                   {m.active && (
-                    <Btn small v={now ? "pri" : "gh"} onClick={() => setModal({ type: "dose", id: m.id })}>
-                      {now ? "投与記録" : "記録"}
+                    <Btn
+                      small
+                      v={now ? "pri" : "gh"}
+                      onClick={() => setModal({ type: "dose", id: m.id })}
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                    >
+                      <Syringe size={14} /> {now ? "投与記録" : "記録"}
                     </Btn>
                   )}
                   <div style={{ display: "flex", gap: 2 }}>
@@ -44,13 +52,14 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
                         background: "transparent",
                         border: "none",
                         color: T.tx3,
-                        fontSize: 14,
                         cursor: "pointer",
                         padding: 6,
                         borderRadius: 8,
+                        display: "inline-flex",
+                        alignItems: "center",
                       }}
                     >
-                      ✏️
+                      <Pencil size={14} />
                     </button>
                     <DelBtn onClick={() => delMed(m.id)} />
                   </div>
@@ -66,9 +75,9 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
                   flexWrap: "wrap",
                 }}
               >
-                <Badge text={`📅 ${m.freq}`} bg={T.input} color={T.tx2} />
+                <Badge text={m.freq} bg={T.input} color={T.tx2} />
                 <Badge
-                  text={now ? "🔔 今日！" : `次回 ${dl}日後`}
+                  text={now ? "今日！" : `次回 ${dl}日後`}
                   bg={now ? `${T.rd}18` : T.gnB}
                   color={now ? T.rd : T.gn}
                 />
@@ -85,7 +94,7 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
         })
       )}
 
-      <Sec icon="📋" action={<Btn small v="gh" onClick={() => setModal({ type: "addSchedule" })}>＋追加</Btn>}>予防スケジュール</Sec>
+      <Sec icon={<ShieldCheck size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addSchedule" })} />}>予防スケジュール</Sec>
       {!pet.schedule?.length ? (
         <Empty icon="📅" text="予定はまだありません" />
       ) : (

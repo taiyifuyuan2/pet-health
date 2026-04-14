@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ChevronDown, Check, Plus } from "lucide-react";
 import { T, calcAge } from "../theme";
 
 export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }) {
@@ -108,14 +109,14 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
             </h1>
             <span
               style={{
-                fontSize: 14,
                 color: T.tx2,
                 transition: "transform .2s",
                 transform: open ? "rotate(180deg)" : "rotate(0deg)",
-                display: "inline-block",
+                display: "inline-flex",
+                alignItems: "center",
               }}
             >
-              ▼
+              <ChevronDown size={16} />
             </span>
           </div>
           <div
@@ -209,7 +210,9 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                     </div>
                   </div>
                   {pet?.id === p.id && (
-                    <span style={{ color: T.ac, fontSize: 14 }}>✓</span>
+                    <span style={{ color: T.ac, display: "inline-flex" }}>
+                      <Check size={16} />
+                    </span>
                   )}
                 </button>
               ))}
@@ -231,9 +234,13 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                   color: T.ac,
                   fontWeight: 700,
                   marginTop: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
                 }}
               >
-                ＋ ペットを追加
+                <Plus size={14} /> ペットを追加
               </button>
             </div>
           )}

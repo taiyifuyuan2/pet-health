@@ -55,3 +55,20 @@ export const todayStr = () => new Date().toISOString().slice(0, 10);
 export const timeStr = () => new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
 export const calcAge = (b) => { const d = new Date(), bd = new Date(b); let y = d.getFullYear() - bd.getFullYear(); if (d.getMonth() < bd.getMonth() || (d.getMonth() === bd.getMonth() && d.getDate() < bd.getDate())) y--; return y; };
 export const daysTo = (d) => Math.ceil((new Date(d) - new Date(todayStr())) / 86400000);
+
+export const googleCalUrl = ({ title, date, description }) => {
+  const d = date.replace(/-/g, "");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: `${d}/${d}`,
+    details: description || "",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+export const PET_COLORS = ["#6d5ccd", "#ca8a04", "#059669", "#db2777", "#2563eb", "#0891b2"];
+export const petColor = (pets, petId) => {
+  const i = pets.findIndex((p) => p.id === petId);
+  return PET_COLORS[(i < 0 ? 0 : i) % PET_COLORS.length];
+};

@@ -5,6 +5,7 @@ export default function Modals({
   modal,
   setModal,
   pet,
+  pets = [],
   recordDose,
   addTodo,
   editTodo,
@@ -15,6 +16,7 @@ export default function Modals({
   addWeight,
   addVisit,
   addSchedule,
+  addCalendarEvent,
   addLab,
   addPet,
   updatePet,
@@ -242,6 +244,45 @@ export default function Modals({
         </label>
         <Btn full onClick={() => { if (s.name) editMed(med.id, s); }}>
           保存
+        </Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "addCalendarEvent") {
+    const petOptions = ["全員", ...pets.map((p) => p.name)];
+    const s = {
+      date: todayStr(),
+      title: "",
+      kind: "予防",
+      petName: pets[0]?.name || "全員",
+      note: "",
+    };
+    return (
+      <Modal title="📅 予定追加" onClose={() => setModal(null)}>
+        <Inp label="日付" type="date" defaultValue={todayStr()} onChange={(e) => (s.date = e.target.value)} />
+        <Inp label="タイトル" placeholder="例: 狂犬病ワクチン" onChange={(e) => (s.title = e.target.value)} />
+        <Sel
+          label="種類"
+          options={["予防", "通院", "お薬", "その他"]}
+          onChange={(e) => (s.kind = e.target.value)}
+        />
+        <Sel label="対象ペット" options={petOptions} onChange={(e) => (s.petName = e.target.value)} />
+        <Inp label="メモ（任意）" placeholder="補足情報" onChange={(e) => (s.note = e.target.value)} />
+        <Btn
+          full
+          onClick={() => {
+            if (!s.date || !s.title) return;
+            const label = s.note ? `${s.title}（${s.note}）` : s.title;
+            const targetIds =
+              s.petName === "全員"
+                ? pets.map((p) => p.id)
+                : [pets.find((p) => p.name === s.petName)?.id].filter(Boolean);
+            addCalendarEvent({ date: s.date, label, petIds: targetIds });
+            setModal(null);
+          }}
+        >
+          追加
         </Btn>
       </Modal>
     );

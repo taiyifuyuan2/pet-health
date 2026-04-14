@@ -1,5 +1,20 @@
+import {
+  Stethoscope, AlertTriangle, Coins, Target, Pill,
+  Heart, Droplets, Bone, Zap, CircleDot, Ruler,
+  Plus, Pencil, Check,
+} from "lucide-react";
 import { T, daysTo, todayStr } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, IconCircle } from "../ui";
+import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, IconCircle, IconBubble, AddBtn } from "../ui";
+
+function conditionIcon(name) {
+  if (/心/.test(name)) return { Ic: Heart, color: "#e11d48" };
+  if (/脂/.test(name)) return { Ic: Droplets, color: "#ca8a04" };
+  if (/ヘルニア|椎間板|骨/.test(name)) return { Ic: Bone, color: "#6d5ccd" };
+  if (/電解質/.test(name)) return { Ic: Zap, color: "#0891b2" };
+  if (/血小板|血/.test(name)) return { Ic: CircleDot, color: "#db2777" };
+  if (/肥満|減量/.test(name)) return { Ic: Ruler, color: "#ea580c" };
+  return { Ic: Stethoscope, color: T.ac };
+}
 
 function TodoRow({ t, togTodo, delTodo, setModal }) {
   let dueLabel = null, dueColor = null, dueBg = null;
@@ -55,7 +70,7 @@ function TodoRow({ t, togTodo, delTodo, setModal }) {
           transition: "all .2s",
         }}
       >
-        {t.done && <span style={{ color: "#fff", fontSize: 13, fontWeight: 800 }}>✓</span>}
+        {t.done && <Check size={14} color="#fff" strokeWidth={3} />}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <span
@@ -97,13 +112,14 @@ function TodoRow({ t, togTodo, delTodo, setModal }) {
           background: "transparent",
           border: "none",
           color: T.tx3,
-          fontSize: 13,
           cursor: "pointer",
           padding: 6,
           borderRadius: 8,
+          display: "inline-flex",
+          alignItems: "center",
         }}
       >
-        ✏️
+        <Pencil size={14} />
       </button>
       <DelBtn onClick={() => delTodo(t.id)} />
     </div>
@@ -142,12 +158,12 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 24,
               flexShrink: 0,
               boxShadow: nextDays <= 0 ? "none" : T.shadow,
+              color: nextDays <= 0 ? "#fff" : T.ac,
             }}
           >
-            💊
+            <Pill size={22} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 2 }}>
@@ -170,13 +186,15 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 4 }}>
         {[
-          { ic: "🩺", v: pet.conditions?.length || 0, l: "診断", c: T.rd },
-          { ic: "⚠️", v: abnC, l: "異常値", c: T.am },
-          { ic: "💰", v: totCost > 0 ? `¥${(totCost / 1000).toFixed(0)}K` : "¥0", l: "累計", c: T.cy },
+          { Ic: Stethoscope, v: pet.conditions?.length || 0, l: "診断", c: T.rd, bg: "#fee2e2" },
+          { Ic: AlertTriangle, v: abnC, l: "異常値", c: T.am, bg: "#fef3c7" },
+          { Ic: Coins, v: totCost > 0 ? `¥${(totCost / 1000).toFixed(0)}K` : "¥0", l: "累計", c: T.gn, bg: "#d1fae5" },
         ].map((s, i) => (
           <Card key={i} style={{ textAlign: "center", padding: "16px 8px" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
-              <IconCircle color={s.c} size={36}>{s.ic}</IconCircle>
+              <IconBubble bg={s.bg} size={40}>
+                <s.Ic size={20} color={s.c} />
+              </IconBubble>
             </div>
             <div style={{ fontSize: 22, fontWeight: 800, color: s.c, letterSpacing: "-0.02em" }}>{s.v}</div>
             <div style={{ fontSize: 10, color: T.tx2, marginTop: 2, fontWeight: 600 }}>{s.l}</div>
@@ -188,7 +206,7 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 16 }}>🎯</span>
+              <Target size={16} color={T.gn} />
               <span style={{ fontSize: 13, fontWeight: 800 }}>減量プラン</span>
             </div>
             <Badge text={`目標 ${tgt}kg`} bg={T.acL} color={T.ac} />
@@ -207,25 +225,31 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
         </Card>
       )}
 
-      <Sec icon="🏥" action={<Btn small v="gh" onClick={() => setModal({ type: "addCondition" })}>＋追加</Btn>}>診断</Sec>
+      <Sec icon="🏥" action={<AddBtn onClick={() => setModal({ type: "addCondition" })} />}>診断</Sec>
       {!pet.conditions?.length ? (
         <Empty icon="📋" text="診断記録はまだありません" />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {pet.conditions.map((c) => (
-            <Card key={c.id} accent={sevColor(c.sev)} style={{ padding: 14, marginBottom: 0 }}>
-              <div style={{ position: "absolute", top: 6, right: 6 }}>
-                <DelBtn onClick={() => delCondition(c.id)} />
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6, paddingRight: 18 }}>{c.name}</div>
-              <Badge text={c.sev} bg={`${sevColor(c.sev)}18`} color={sevColor(c.sev)} />
-              {c.note && <p style={{ fontSize: 10, color: T.tx2, marginTop: 6, lineHeight: 1.4 }}>{c.note}</p>}
-            </Card>
-          ))}
+          {pet.conditions.map((c) => {
+            const ci = conditionIcon(c.name);
+            return (
+              <Card key={c.id} accent={sevColor(c.sev)} style={{ padding: 14, marginBottom: 0 }}>
+                <div style={{ position: "absolute", top: 6, right: 6 }}>
+                  <DelBtn onClick={() => delCondition(c.id)} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, paddingRight: 18 }}>
+                  <ci.Ic size={16} color={ci.color} />
+                  <div style={{ fontSize: 13, fontWeight: 800 }}>{c.name}</div>
+                </div>
+                <Badge text={c.sev} bg={`${sevColor(c.sev)}18`} color={sevColor(c.sev)} />
+                {c.note && <p style={{ fontSize: 10, color: T.tx2, marginTop: 6, lineHeight: 1.4 }}>{c.note}</p>}
+              </Card>
+            );
+          })}
         </div>
       )}
 
-      <Sec icon="✅" action={<Btn small v="gh" onClick={() => setModal({ type: "addTodo" })}>＋追加</Btn>}>やること</Sec>
+      <Sec icon="✅" action={<AddBtn onClick={() => setModal({ type: "addTodo" })} />}>やること</Sec>
       {(() => {
         const todos = pet.todos || [];
         if (!todos.length) return <Empty icon="✨" text="今やることはありません" />;

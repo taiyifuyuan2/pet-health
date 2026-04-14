@@ -1,5 +1,6 @@
+import { FlaskConical } from "lucide-react";
 import { T } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Badge } from "../ui";
+import { Card, Btn, Sec, Empty, DelBtn, Badge, AddBtn } from "../ui";
 
 function ValueBar({ value, refRange, status }) {
   const m = refRange?.match(/([\d.]+)\s*[-~〜]\s*([\d.]+)/);
@@ -55,7 +56,7 @@ function ValueBar({ value, refRange, status }) {
 export default function Labs({ pet, setModal, delLab }) {
   return (
     <>
-      <Sec icon="🔬" action={<Btn small v="gh" onClick={() => setModal({ type: "addLab" })}>＋追加</Btn>}>検査結果</Sec>
+      <Sec icon={<FlaskConical size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addLab" })} />}>検査結果</Sec>
       {!pet.labs?.length ? (
         <Empty icon="🔬" text="検査記録はまだありません" />
       ) : (

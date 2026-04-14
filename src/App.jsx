@@ -296,6 +296,18 @@ export default function App() {
     setSaving(false);
   };
 
+  const addCalendarEvent = async ({ date, label, petIds }) => {
+    if (!petIds || petIds.length === 0) return;
+    setSaving(true);
+    try {
+      await supabase.from("schedule").insert(
+        petIds.map((pid) => ({ pet_id: pid, date, label }))
+      );
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
   const delSchedule = async (id) => {
     setSaving(true);
     try {
@@ -452,6 +464,8 @@ export default function App() {
           addWeight={addWeight}
           addVisit={addVisit}
           addSchedule={addSchedule}
+          addCalendarEvent={addCalendarEvent}
+          pets={pets}
           addLab={addLab}
           addPet={addPet}
           updatePet={updatePet}
@@ -501,7 +515,7 @@ export default function App() {
             />
           )}
           {tab === "meds" && <Meds pet={pet} setModal={setModal} delMed={delMed} delSchedule={delSchedule} />}
-          {tab === "cal" && <Calendar pet={pet} setTab={setTab} />}
+          {tab === "cal" && <Calendar pets={pets} setTab={setTab} setModal={setModal} />}
           {tab === "visits" && <VisitsTab pet={pet} setModal={setModal} delVisit={delVisit} />}
           {tab === "labs" && <Labs pet={pet} setModal={setModal} delLab={delLab} />}
           {tab === "food" && <Food pet={pet} setModal={setModal} delFood={delFood} />}
@@ -539,6 +553,8 @@ export default function App() {
         addWeight={addWeight}
         addVisit={addVisit}
         addSchedule={addSchedule}
+        addCalendarEvent={addCalendarEvent}
+        pets={pets}
         addLab={addLab}
         addPet={addPet}
         updatePet={updatePet}
