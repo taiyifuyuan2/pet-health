@@ -4,12 +4,28 @@ import { useState, useEffect, useCallback, useRef } from "react";
 // THEME
 // ═══════════════════════════════════════
 const T = {
-  bg: "#08080d", card: "#111119", card2: "#16161f", input: "#1b1b28",
-  bdr: "#232338", bdr2: "#2e2e48", tx: "#e8e6f0", tx2: "#8585a8", tx3: "#55557a",
-  ac: "#7c5bf5", acG: "rgba(124,91,245,0.12)", acS: "#6a4de0",
-  gn: "#34d399", gnB: "#0a2a1e", rd: "#ef4444", rdB: "#2a0e0e",
-  am: "#f59e0b", amB: "#2a1e08", bl: "#3b82f6", pk: "#ec4899", cy: "#06b6d4",
-  gr: "linear-gradient(135deg,#7c5bf5,#6366f1,#8b5cf6)",
+  bg: "#f7f6f3",        // ページ背景（温かみのあるオフホワイト）
+  card: "#ffffff",       // カード背景（白）
+  card2: "#faf9f7",      // カード背景2（やや暖色）
+  input: "#f0eeea",      // 入力フィールド背景
+  bdr: "#e4e0d8",        // ボーダー
+  bdr2: "#d4cfc5",       // ボーダー濃いめ
+  tx: "#2d2a24",         // メインテキスト（ダークブラウン）
+  tx2: "#7a7468",        // サブテキスト
+  tx3: "#a09888",        // 薄いテキスト
+  ac: "#7c5bf5",         // アクセント（紫・据え置き）
+  acG: "rgba(124,91,245,0.08)", // アクセントグロー
+  acS: "#6a4de0",        // アクセント暗め
+  gn: "#16a34a",         // 緑
+  gnB: "#dcfce7",        // 緑背景
+  rd: "#dc2626",         // 赤
+  rdB: "#fee2e2",        // 赤背景
+  am: "#d97706",         // アンバー
+  amB: "#fef3c7",        // アンバー背景
+  bl: "#2563eb",         // 青
+  pk: "#db2777",         // ピンク
+  cy: "#0891b2",         // シアン
+  gr: "linear-gradient(135deg,#7c5bf5,#6366f1,#8b5cf6)", // グラデーション（据え置き）
 };
 
 // ═══════════════════════════════════════
@@ -139,10 +155,10 @@ function Sel({ label, options, ...p }) {
   </div>;
 }
 function Badge({ text, color, bg }) {
-  return <span style={{ display: "inline-block", padding: "2px 9px", borderRadius: 20, fontSize: 10, fontWeight: 700, color: color || "#fff", background: bg || "rgba(255,255,255,.06)" }}>{text}</span>;
+  return <span style={{ display: "inline-block", padding: "2px 9px", borderRadius: 20, fontSize: 10, fontWeight: 700, color: color || "#fff", background: bg || "rgba(0,0,0,.05)" }}>{text}</span>;
 }
 function Bar({ val, max, color, h = 6 }) {
-  return <div style={{ width: "100%", height: h, borderRadius: h, background: "rgba(255,255,255,.04)", overflow: "hidden" }}>
+  return <div style={{ width: "100%", height: h, borderRadius: h, background: "rgba(0,0,0,.06)", overflow: "hidden" }}>
     <div style={{ width: `${Math.min((val / max) * 100, 100)}%`, height: "100%", borderRadius: h, background: `linear-gradient(90deg,${color},${color}66)`, transition: "width .4s" }} />
   </div>;
 }
@@ -156,7 +172,7 @@ function Sec({ children, icon, action }) {
   </div>;
 }
 function Modal({ title, children, onClose }) {
-  return <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16, backdropFilter: "blur(4px)" }} onClick={onClose}>
+  return <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 16, backdropFilter: "blur(4px)" }} onClick={onClose}>
     <div onClick={e => e.stopPropagation()} style={{ background: T.card, borderRadius: 16, border: `1px solid ${T.bdr}`, padding: 20, maxWidth: 380, width: "100%", maxHeight: "85vh", overflowY: "auto" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
         <h3 style={{ fontSize: 16, fontWeight: 800 }}>{title}</h3>
@@ -484,7 +500,7 @@ export default function App() {
                 const p = ((w.value - 4) / 4) * 100;
                 return <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 36 }}>
                   <span style={{ fontSize: 8, fontWeight: 700, color: T.ac, marginBottom: 2 }}>{w.value}</span>
-                  <div style={{ width: "100%", height: `${Math.max(p, 5)}%`, background: `linear-gradient(180deg,${w.value > 6 ? T.rd : T.gn}aa,${w.value > 6 ? T.rd : T.gn}22)`, borderRadius: "5px 5px 2px 2px" }} />
+                  <div style={{ width: "100%", height: `${Math.max(p, 5)}%`, background: `linear-gradient(180deg,${w.value > 6 ? T.rd : T.gn}cc,${w.value > 6 ? T.rd : T.gn}22)`, borderRadius: "5px 5px 2px 2px" }} />
                   <span style={{ fontSize: 7, color: T.tx3, marginTop: 2 }}>{w.date.slice(5)}</span>
                 </div>;
               })}
