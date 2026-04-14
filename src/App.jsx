@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { supabase } from "./lib/supabase";
+import { fetchPets, seedInitialData, uploadPhoto } from "./lib/data";
+import Auth from "./components/Auth";
 
 // ═══════════════════════════════════════
 // THEME
@@ -29,92 +32,8 @@ const T = {
 };
 
 // ═══════════════════════════════════════
-// INITIAL DATA
-// ═══════════════════════════════════════
-const INIT_PETS = [
-  {
-    id: "ram", name: "ラムちゃん", emoji: "🐕", photo: null,
-    birth: "2021-08-07", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
-    conditions: [
-      { id: "c1", name: "心肥大", sev: "要経過観察", note: "レントゲンで確認。エコー未実施。" },
-      { id: "c2", name: "高脂血症", sev: "軽度", note: "CPK 226。食事管理必要。" },
-      { id: "c3", name: "椎間板ヘルニア", sev: "Gr.1", note: "背骨湾曲。安静指示。" },
-      { id: "c4", name: "電解質異常", sev: "要確認", note: "Na/K/Cl低値。腎臓正常。" },
-      { id: "c5", name: "血小板低値", sev: "要観察", note: "PLT 8.5（基準20-50）。" },
-      { id: "c6", name: "肥満", sev: "要改善", note: "7.4kg。適正4.5-5kg。" },
-    ],
-    meds: [
-      { id: "m1", name: "アンチノール30", purpose: "抗炎症（心臓・関節）", freq: "毎日1粒", interval: 1, next: "2026-04-15", remaining: 28, active: true },
-      { id: "m2", name: "イベルメックM", purpose: "フィラリア予防", freq: "月1回", interval: 30, next: "2026-05-01", remaining: 3, active: true },
-      { id: "m3", name: "ブラベクト250", purpose: "ノミ・マダニ予防", freq: "3ヶ月に1回", interval: 90, next: "2026-04-14", remaining: 2, active: true },
-    ],
-    labs: [{
-      id: "l1", date: "2026-04-13", type: "総合血液検査+腎臓パネル",
-      results: [
-        { name: "GLU", val: 120, unit: "mg/dL", ref: "75-128", st: "ok" },
-        { name: "TCHO", val: 166, unit: "mg/dL", ref: "111-312", st: "ok" },
-        { name: "TG", val: 78, unit: "mg/dL", ref: "30-133", st: "ok" },
-        { name: "CPK", val: 226, unit: "U/L", ref: "49-166", st: "hi", note: "心筋損傷指標" },
-        { name: "GOT", val: 34, unit: "U/L", ref: "17-44", st: "ok" },
-        { name: "GPT", val: 69, unit: "U/L", ref: "17-78", st: "ok" },
-        { name: "Na", val: 133, unit: "mEq/L", ref: "141-152", st: "lo", note: "電解質低下" },
-        { name: "K", val: 2.8, unit: "mEq/L", ref: "3.8-5.0", st: "lo", note: "電解質低下" },
-        { name: "Cl", val: 95, unit: "mEq/L", ref: "102-117", st: "lo", note: "電解質低下" },
-        { name: "RBC", val: 942, unit: "×10⁴/μL", ref: "550-850", st: "hi", note: "脱水or心臓代償" },
-        { name: "HGB", val: 18.4, unit: "g/dL", ref: "12.0-18.0", st: "hi" },
-        { name: "HCT", val: 57.1, unit: "%", ref: "37.0-55.0", st: "hi" },
-        { name: "PLT", val: 8.5, unit: "×10⁴/μL", ref: "20.0-50.0", st: "lo", note: "血小板低値" },
-        { name: "SDMA", val: 10, unit: "μg/dL", ref: "0-14", st: "ok" },
-        { name: "CRE", val: 0.8, unit: "mg/dL", ref: "0.5-1.8", st: "ok" },
-        { name: "BUN", val: 16, unit: "mg/dL", ref: "7-27", st: "ok" },
-      ],
-    }],
-    visits: [{
-      id: "v1", date: "2026-04-13", clinic: "みなみ動物クリニック", cost: 44869,
-      summary: "初診。心肥大・高脂血症・椎間板ヘルニア確認。皮下点滴。安静指示。",
-      items: [
-        { n: "初診料", a: 1000 }, { n: "レントゲン×2", a: 7000 }, { n: "血液血球", a: 2500 },
-        { n: "血液生化SDMA", a: 8950 }, { n: "犬スナップ", a: 2000 }, { n: "皮下点滴", a: 1000 },
-        { n: "ビタミン剤・強肝剤", a: 1500 }, { n: "トリミング", a: 1500 },
-        { n: "アンチノール30", a: 3300 }, { n: "イベルメックM×3", a: 2580 }, { n: "ブラベクト250×2", a: 9460 },
-      ],
-    }],
-    weights: [{ date: "2026-04-13", value: 7.4 }],
-    foods: [],
-    todos: [
-      { id: "t1", text: "心臓エコー検査", done: false },
-      { id: "t2", text: "低脂肪フードへ切り替え", done: false },
-      { id: "t3", text: "歯科チェック", done: false },
-      { id: "t4", text: "減量：まず6.5kgへ", done: false },
-    ],
-    schedule: [
-      { id: "s1", date: "2026-05-01", label: "イベルメック投与開始" },
-      { id: "s2", date: "2026-07-13", label: "ブラベクト次回" },
-      { id: "s3", date: "2026-10-13", label: "半年検診" },
-      { id: "s4", date: "2026-11-25", label: "6種混合ワクチン" },
-    ],
-  },
-  {
-    id: "moka", name: "モカちゃん", emoji: "🐶", photo: null,
-    birth: "2023-06-06", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
-    conditions: [{ id: "mc1", name: "肥満気味", sev: "要注意", note: "7.1kg。適正4.5-5kg。" }],
-    meds: [], labs: [],
-    visits: [],
-    weights: [{ date: "2026-04-14", value: 7.1 }],
-    foods: [],
-    todos: [
-      { id: "mt1", text: "フィラリア検査・予防薬", done: false },
-      { id: "mt2", text: "ノミ・マダニ予防", done: false },
-      { id: "mt3", text: "狂犬病ワクチン確認", done: false },
-    ],
-    schedule: [{ id: "ms1", date: "2026-11-25", label: "6種混合ワクチン" }],
-  },
-];
-
-// ═══════════════════════════════════════
 // UTILS
 // ═══════════════════════════════════════
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const todayStr = () => new Date().toISOString().slice(0, 10);
 const timeStr = () => new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
 const calcAge = (b) => { const d = new Date(), bd = new Date(b); let y = d.getFullYear() - bd.getFullYear(); if (d.getMonth() < bd.getMonth() || (d.getMonth() === bd.getMonth() && d.getDate() < bd.getDate())) y--; return y; };
@@ -200,64 +119,366 @@ const TABS = [
 ];
 
 export default function App() {
-  const [pets, setPets] = useState(INIT_PETS);
-  const [pid, setPid] = useState("ram");
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [pets, setPets] = useState([]);
+  const [pid, setPid] = useState(null);
   const [tab, setTab] = useState("dash");
-  const [modal, setModal] = useState(null); // { type, data? }
+  const [modal, setModal] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef(null);
 
   const pet = pets.find(p => p.id === pid) || pets[0];
-  const setPet = (fn) => setPets(ps => ps.map(p => p.id === pid ? (typeof fn === "function" ? fn(p) : { ...p, ...fn }) : p));
 
-  // Storage
-  useEffect(() => { (async () => { try { const r = { value: localStorage.getItem("pet-app-v4") }; if (r?.value) setPets(JSON.parse(r.value)); } catch {} setLoaded(true); })(); }, []);
-  const save = useCallback(async d => { setSaving(true); try { localStorage.setItem("pet-app-v4", JSON.stringify(d)); } catch {} setSaving(false); }, []);
-  useEffect(() => { if (loaded) save(pets); }, [pets, loaded, save]);
+  // Auth state listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load data when user logs in
+  useEffect(() => {
+    if (!user) {
+      setPets([]);
+      setLoaded(false);
+      return;
+    }
+
+    const loadData = async () => {
+      try {
+        let data = await fetchPets(user.id);
+        if (data.length === 0) {
+          await seedInitialData(user.id);
+          data = await fetchPets(user.id);
+        }
+        setPets(data);
+        if (data.length > 0) setPid(data[0].id);
+      } catch (err) {
+        console.error('Failed to load data:', err);
+      } finally {
+        setLoaded(true);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Reload helper
+  const reload = useCallback(async () => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const data = await fetchPets(user.id);
+      setPets(data);
+    } catch (err) {
+      console.error('Failed to reload:', err);
+    } finally {
+      setSaving(false);
+    }
+  }, [user]);
 
   // Computed
-  const age = calcAge(pet.birth);
-  const lw = pet.weights.length ? pet.weights[pet.weights.length - 1].value : 0;
+  const age = pet ? calcAge(pet.birth) : 0;
+  const lw = pet?.weights?.length ? pet.weights[pet.weights.length - 1].value : 0;
   const tgt = 5.0;
-  const abnC = pet.labs.reduce((s, l) => s + l.results.filter(r => r.st !== "ok").length, 0);
-  const totCost = pet.visits.reduce((s, v) => s + v.cost, 0);
-  const nextMed = pet.meds.filter(m => m.active).sort((a, b) => a.next.localeCompare(b.next))[0];
+  const abnC = pet?.labs?.reduce((s, l) => s + l.results.filter(r => r.st !== "ok").length, 0) || 0;
+  const totCost = pet?.visits?.reduce((s, v) => s + v.cost, 0) || 0;
+  const nextMed = pet?.meds?.filter(m => m.active).sort((a, b) => a.next?.localeCompare(b.next))[0];
   const nextDays = nextMed ? daysTo(nextMed.next) : null;
 
   // ─── Handlers ───
-  const handlePhoto = e => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = ev => setPet(p => ({ ...p, photo: ev.target.result })); r.readAsDataURL(f); };
+  const handlePhoto = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f || !pet || !user) return;
+    setSaving(true);
+    try {
+      await uploadPhoto(user.id, pet.id, f);
+      await reload();
+    } catch (err) {
+      console.error('Photo upload failed:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const addTodo = (text) => { if (!text.trim()) return; setPet(p => ({ ...p, todos: [...p.todos, { id: uid(), text, done: false }] })); };
-  const togTodo = i => setPet(p => ({ ...p, todos: p.todos.map((t, j) => j === i ? { ...t, done: !t.done } : t) }));
-  const delTodo = i => setPet(p => ({ ...p, todos: p.todos.filter((_, j) => j !== i) }));
+  const addTodo = async (text) => {
+    if (!text.trim() || !pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('todos').insert({ pet_id: pet.id, text, done: false });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addWeight = (v) => { const n = parseFloat(v); if (isNaN(n) || n <= 0) return; setPet(p => ({ ...p, weights: [...p.weights, { date: todayStr(), value: n }] })); };
-  const delWeight = i => setPet(p => ({ ...p, weights: p.weights.filter((_, j) => j !== i) }));
+  const togTodo = async (todo) => {
+    setSaving(true);
+    try {
+      await supabase.from('todos').update({ done: !todo.done }).eq('id', todo.id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addFood = (d) => setPet(p => ({ ...p, foods: [...p.foods, { id: uid(), date: todayStr(), time: timeStr(), ...d }] }));
-  const delFood = id => setPet(p => ({ ...p, foods: p.foods.filter(f => f.id !== id) }));
+  const delTodo = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('todos').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addMed = (d) => setPet(p => ({ ...p, meds: [...p.meds, { id: uid(), active: true, ...d }] }));
-  const delMed = id => setPet(p => ({ ...p, meds: p.meds.filter(m => m.id !== id) }));
-  const recordDose = id => { setPet(p => ({ ...p, meds: p.meds.map(m => { if (m.id !== id) return m; const nd = new Date(todayStr()); nd.setDate(nd.getDate() + (m.interval || 30)); return { ...m, next: nd.toISOString().slice(0, 10), remaining: Math.max(0, (m.remaining || 1) - 1) }; }) })); setModal(null); };
+  const addWeight = async (v) => {
+    const n = parseFloat(v);
+    if (isNaN(n) || n <= 0 || !pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('weights').insert({ pet_id: pet.id, date: todayStr(), value: n });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addCondition = d => setPet(p => ({ ...p, conditions: [...p.conditions, { id: uid(), ...d }] }));
-  const delCondition = id => setPet(p => ({ ...p, conditions: p.conditions.filter(c => c.id !== id) }));
+  const delWeight = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('weights').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addVisit = d => setPet(p => ({ ...p, visits: [{ id: uid(), ...d }, ...p.visits] }));
-  const delVisit = id => setPet(p => ({ ...p, visits: p.visits.filter(v => v.id !== id) }));
+  const addFood = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('foods').insert({ pet_id: pet.id, date: todayStr(), time: timeStr(), name: d.name, amount: d.amount, type: d.type });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addSchedule = d => setPet(p => ({ ...p, schedule: [...p.schedule, { id: uid(), ...d }] }));
-  const delSchedule = id => setPet(p => ({ ...p, schedule: p.schedule.filter(s => s.id !== id) }));
+  const delFood = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('foods').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addLab = d => setPet(p => ({ ...p, labs: [{ id: uid(), ...d }, ...p.labs] }));
-  const delLab = id => setPet(p => ({ ...p, labs: p.labs.filter(l => l.id !== id) }));
+  const addMed = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('meds').insert({
+        pet_id: pet.id,
+        name: d.name,
+        purpose: d.purpose,
+        freq: d.freq,
+        interval_days: d.interval,
+        next_dose: d.next,
+        remaining: d.remaining,
+        active: true,
+      });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  const addPet = d => { const np = { id: uid(), conditions: [], meds: [], labs: [], visits: [], weights: [], foods: [], todos: [], schedule: [], photo: null, ...d }; setPets(ps => [...ps, np]); setPid(np.id); setModal(null); };
-  const delPet = id => { if (pets.length <= 1) return; setPets(ps => ps.filter(p => p.id !== id)); if (pid === id) setPid(pets.find(p => p.id !== id)?.id); };
+  const delMed = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('meds').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
 
-  if (!loaded) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: T.bg }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 32, animation: "pulse 1.5s infinite" }}>🐾</div><p style={{ color: T.tx2, fontSize: 13, marginTop: 8 }}>読み込み中...</p></div></div>;
+  const recordDose = async (id) => {
+    const med = pet?.meds?.find(m => m.id === id);
+    if (!med) return;
+    setSaving(true);
+    try {
+      const nd = new Date(todayStr());
+      nd.setDate(nd.getDate() + (med.interval || 30));
+      await supabase.from('meds').update({
+        next_dose: nd.toISOString().slice(0, 10),
+        remaining: Math.max(0, (med.remaining || 1) - 1),
+      }).eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const addCondition = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('conditions').insert({ pet_id: pet.id, name: d.name, severity: d.sev, note: d.note });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const delCondition = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('conditions').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const addVisit = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('visits').insert({ pet_id: pet.id, date: d.date, clinic: d.clinic, cost: d.cost, summary: d.summary });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const delVisit = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('visits').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const addSchedule = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('schedule').insert({ pet_id: pet.id, date: d.date, label: d.label });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const delSchedule = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('schedule').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const addLab = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      const { data: lab } = await supabase.from('labs').insert({ pet_id: pet.id, date: d.date, type: d.type }).select().single();
+      if (lab && d.results.length > 0) {
+        await supabase.from('lab_results').insert(d.results.map(r => ({
+          lab_id: lab.id,
+          name: r.name,
+          val: r.val,
+          unit: r.unit,
+          ref_range: r.ref,
+          status: r.st,
+          note: r.note,
+        })));
+      }
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const delLab = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from('labs').delete().eq('id', id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const addPet = async (d) => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      const { data: np } = await supabase.from('pets').insert({
+        user_id: user.id,
+        name: d.name,
+        emoji: d.emoji,
+        birth: d.birth,
+        breed: d.breed,
+        sex: d.sex,
+      }).select().single();
+      await reload();
+      if (np) setPid(np.id);
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const delPet = async (id) => {
+    if (pets.length <= 1) return;
+    setSaving(true);
+    try {
+      await supabase.from('pets').delete().eq('id', id);
+      await reload();
+      if (pid === id && pets.length > 1) {
+        const remaining = pets.find(p => p.id !== id);
+        if (remaining) setPid(remaining.id);
+      }
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const updatePet = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from('pets').update({
+        name: d.name,
+        emoji: d.emoji,
+        birth: d.birth,
+        breed: d.breed,
+        sex: d.sex,
+      }).eq('id', pet.id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // Loading states
+  if (authLoading) {
+    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: T.bg }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 32, animation: "pulse 1.5s infinite" }}>🐾</div><p style={{ color: T.tx2, fontSize: 13, marginTop: 8 }}>読み込み中...</p></div></div>;
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
+  if (!loaded) {
+    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: T.bg }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 32, animation: "pulse 1.5s infinite" }}>🐾</div><p style={{ color: T.tx2, fontSize: 13, marginTop: 8 }}>データを読み込み中...</p></div></div>;
+  }
+
+  if (!pet) {
+    return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: T.bg }}><div style={{ textAlign: "center" }}><div style={{ fontSize: 32 }}>🐾</div><p style={{ color: T.tx2, fontSize: 13, marginTop: 8 }}>ペットを追加してください</p><Btn onClick={() => setModal({ type: "addPet" })} style={{ marginTop: 12 }}>ペット追加</Btn></div></div>;
+  }
 
   // ═══════════════════════════════════════
   // RENDER
@@ -322,7 +543,7 @@ export default function App() {
           )}
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, marginBottom: 12 }}>
-            {[{ ic: "🩺", v: pet.conditions.length, l: "診断", c: T.rd }, { ic: "⚠️", v: abnC, l: "異常値", c: T.am }, { ic: "💰", v: totCost > 0 ? `¥${(totCost / 1000).toFixed(0)}K` : "¥0", l: "累計", c: T.cy }].map((s, i) => (
+            {[{ ic: "🩺", v: pet.conditions?.length || 0, l: "診断", c: T.rd }, { ic: "⚠️", v: abnC, l: "異常値", c: T.am }, { ic: "💰", v: totCost > 0 ? `¥${(totCost / 1000).toFixed(0)}K` : "¥0", l: "累計", c: T.cy }].map((s, i) => (
               <Card key={i} style={{ textAlign: "center", padding: "10px 4px" }}>
                 <div style={{ fontSize: 16 }}>{s.ic}</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: s.c }}>{s.v}</div>
@@ -331,7 +552,7 @@ export default function App() {
             ))}
           </div>
 
-          {lw > 0 && <Card>
+          {lw > 0 && pet.weights?.[0] && <Card>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 5 }}>
               <span style={{ fontWeight: 700 }}>🎯 減量</span><span style={{ color: T.tx2 }}>目標 {tgt}kg</span>
             </div>
@@ -341,7 +562,7 @@ export default function App() {
 
           {/* Conditions */}
           <Sec icon="🏥" action={<Btn small v="gh" onClick={() => setModal({ type: "addCondition" })}>＋追加</Btn>}>診断</Sec>
-          {pet.conditions.length === 0 ? <Empty text="診断記録なし" /> : (
+          {!pet.conditions?.length ? <Empty text="診断記録なし" /> : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
               {pet.conditions.map(c => (
                 <Card key={c.id} style={{ padding: 10, position: "relative" }}>
@@ -356,13 +577,13 @@ export default function App() {
 
           {/* Todos */}
           <Sec icon="✅" action={<Btn small v="gh" onClick={() => setModal({ type: "addTodo" })}>＋追加</Btn>}>やること</Sec>
-          {pet.todos.length === 0 ? <Empty text="タスクなし" /> : pet.todos.map((t, i) => (
+          {!pet.todos?.length ? <Empty text="タスクなし" /> : pet.todos.map((t) => (
             <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 8, background: T.card, borderRadius: 9, border: `1px solid ${T.bdr}`, padding: "8px 10px", marginBottom: 4, opacity: t.done ? .35 : 1 }}>
-              <div onClick={() => togTodo(i)} style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, border: t.done ? "none" : `2px solid ${T.bdr}`, background: t.done ? T.ac : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <div onClick={() => togTodo(t)} style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, border: t.done ? "none" : `2px solid ${T.bdr}`, background: t.done ? T.ac : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 {t.done && <span style={{ color: "#fff", fontSize: 10 }}>✓</span>}
               </div>
               <span style={{ flex: 1, fontSize: 12, textDecoration: t.done ? "line-through" : "none" }}>{t.text}</span>
-              <DelBtn onClick={() => delTodo(i)} />
+              <DelBtn onClick={() => delTodo(t.id)} />
             </div>
           ))}
         </>}
@@ -370,7 +591,7 @@ export default function App() {
         {/* ═══ MEDS ═══ */}
         {tab === "meds" && <>
           <Sec icon="💊" action={<Btn small v="gh" onClick={() => setModal({ type: "addMed" })}>＋追加</Btn>}>お薬・予防</Sec>
-          {pet.meds.length === 0 ? <Empty text="お薬の登録なし" /> : pet.meds.map(m => {
+          {!pet.meds?.length ? <Empty text="お薬の登録なし" /> : pet.meds.map(m => {
             const dl = daysTo(m.next), now = dl <= 0;
             return (
               <Card key={m.id} bc={now ? `${T.rd}55` : undefined} style={{ background: now ? `${T.rd}06` : T.card }}>
@@ -391,7 +612,7 @@ export default function App() {
           })}
 
           <Sec icon="📋" action={<Btn small v="gh" onClick={() => setModal({ type: "addSchedule" })}>＋追加</Btn>}>予防スケジュール</Sec>
-          {pet.schedule.length === 0 ? <Empty text="予定なし" /> : pet.schedule.sort((a, b) => a.date.localeCompare(b.date)).map(s => {
+          {!pet.schedule?.length ? <Empty text="予定なし" /> : pet.schedule.sort((a, b) => a.date.localeCompare(b.date)).map(s => {
             const d = daysTo(s.date);
             return (
               <Card key={s.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -410,7 +631,7 @@ export default function App() {
         {/* ═══ LABS ═══ */}
         {tab === "labs" && <>
           <Sec icon="🔬" action={<Btn small v="gh" onClick={() => setModal({ type: "addLab" })}>＋追加</Btn>}>検査結果</Sec>
-          {pet.labs.length === 0 ? <Empty text="検査記録なし" /> : pet.labs.map(lab => (
+          {!pet.labs?.length ? <Empty text="検査記録なし" /> : pet.labs.map(lab => (
             <div key={lab.id}>
               <Card>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -446,7 +667,7 @@ export default function App() {
         {/* ═══ CALENDAR ═══ */}
         {tab === "cal" && <>
           <Sec icon="🏥" action={<Btn small v="gh" onClick={() => setModal({ type: "addVisit" })}>＋追加</Btn>}>通院記録</Sec>
-          {pet.visits.length === 0 ? <Empty text="通院記録なし" /> : pet.visits.map(v => (
+          {!pet.visits?.length ? <Empty text="通院記録なし" /> : pet.visits.map(v => (
             <Card key={v.id}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                 <div><div style={{ fontSize: 13, fontWeight: 700 }}>{v.date}</div><div style={{ fontSize: 10, color: T.tx2 }}>{v.clinic}</div></div>
@@ -471,8 +692,8 @@ export default function App() {
         {/* ═══ FOOD ═══ */}
         {tab === "food" && <>
           <Sec icon="🍽️" action={<Btn small v="gh" onClick={() => setModal({ type: "addFood" })}>＋追加</Btn>}>食事記録</Sec>
-          {pet.foods.length === 0 ? <Empty text="食事記録なし。＋追加で記録しよう" /> : (
-            [...pet.foods].reverse().map(f => (
+          {!pet.foods?.length ? <Empty text="食事記録なし。＋追加で記録しよう" /> : (
+            pet.foods.map(f => (
               <Card key={f.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 10px" }}>
                 <span style={{ fontSize: 16 }}>{f.type === "おやつ" ? "🦴" : f.type === "サプリ" ? "💊" : "🍖"}</span>
                 <div style={{ flex: 1 }}>
@@ -493,7 +714,7 @@ export default function App() {
               <span style={{ fontSize: 11, fontWeight: 700, color: lw > 6 ? T.rd : T.gn }}>🎯 目標{tgt}kg あと{(lw - tgt).toFixed(1)}kg</span>
             </div>
           </Card>
-          {pet.weights.length > 1 && <Card>
+          {pet.weights?.length > 1 && <Card>
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8 }}>📈 推移</div>
             <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 100 }}>
               {pet.weights.slice(-15).map((w, i) => {
@@ -507,12 +728,12 @@ export default function App() {
             </div>
           </Card>}
           <Sec icon="⚖️" action={<Btn small v="gh" onClick={() => setModal({ type: "addWeight" })}>＋記録</Btn>}>記録履歴</Sec>
-          {[...pet.weights].reverse().map((w, i) => (
+          {[...(pet.weights || [])].reverse().map((w, i) => (
             <Card key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px" }}>
               <span style={{ fontSize: 12 }}>{w.date}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: w.value > 6 ? T.am : T.gn }}>{w.value}kg</span>
-                <DelBtn onClick={() => delWeight(pet.weights.length - 1 - i)} />
+                <DelBtn onClick={() => delWeight(w.id)} />
               </div>
             </Card>
           ))}
@@ -523,9 +744,9 @@ export default function App() {
           <Card glow style={{ textAlign: "center", padding: 18 }}>
             <div style={{ fontSize: 10, color: T.tx2 }}>累計医療費</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: T.ac }}>¥{totCost.toLocaleString()}</div>
-            <div style={{ fontSize: 10, color: T.tx2, marginTop: 2 }}>通院{pet.visits.length}回</div>
+            <div style={{ fontSize: 10, color: T.tx2, marginTop: 2 }}>通院{pet.visits?.length || 0}回</div>
           </Card>
-          {pet.visits.map(v => {
+          {pet.visits?.map(v => {
             const cats = {};
             (v.items || []).forEach(it => {
               const cat = it.n.match(/検査|血液|SDMA|スナップ/) ? "検査" : it.n.match(/レントゲン/) ? "画像" : it.n.match(/点滴|ビタミン|強肝/) ? "処置" : it.n.match(/アンチ|イベル|ブラベクト/) ? "薬" : "他";
@@ -565,12 +786,12 @@ export default function App() {
             <div style={{ fontSize: 13, fontWeight: 700 }}>みなみ動物クリニック</div>
             <div style={{ fontSize: 10, color: T.tx2, lineHeight: 1.6, marginTop: 2 }}>📍 鹿児島市谷山中央4丁目4954-26<br/>📞 099-210-5787</div>
           </Card>
-          <Sec icon="👨‍👩‍👦">家族で共有</Sec>
+          <Sec icon="👤">アカウント</Sec>
           <Card>
-            <Btn full v="gh" onClick={async () => { try { localStorage.setItem("pet-shared", JSON.stringify(pets)); alert("共有データを更新しました！"); } catch {} }}>🔗 家族と共有する</Btn>
+            <div style={{ fontSize: 11, color: T.tx2, marginBottom: 8 }}>{user?.email}</div>
+            <Btn full v="gh" onClick={handleLogout}>ログアウト</Btn>
           </Card>
           <Sec icon="🗑️">データ</Sec>
-          <Card><Btn full v="dn" onClick={() => { if (confirm("全データリセットしますか？")) { setPets(INIT_PETS); setPid("ram"); } }}>データをリセット</Btn></Card>
           {pets.length > 1 && <Card><Btn full v="dn" onClick={() => { if (confirm(`${pet.name}を削除しますか？`)) delPet(pet.id); }}>この子を削除</Btn></Card>}
         </>}
       </div>
@@ -578,7 +799,7 @@ export default function App() {
       {/* ═══ MODALS ═══ */}
       {modal?.type === "dose" && (
         <Modal title="💊 投与記録" onClose={() => setModal(null)}>
-          <p style={{ fontSize: 13, color: T.tx2, marginBottom: 14 }}>{pet.meds.find(m => m.id === modal.id)?.name} を投与しましたか？</p>
+          <p style={{ fontSize: 13, color: T.tx2, marginBottom: 14 }}>{pet.meds?.find(m => m.id === modal.id)?.name} を投与しましたか？</p>
           <div style={{ display: "flex", gap: 8 }}><Btn full v="gh" onClick={() => setModal(null)}>キャンセル</Btn><Btn full onClick={() => recordDose(modal.id)}>記録する</Btn></div>
         </Modal>
       )}
@@ -632,8 +853,7 @@ export default function App() {
       })()}
 
       {modal?.type === "addVisit" && (() => {
-        const s = { date: todayStr(), clinic: "みなみ動物クリニック", cost: 0, summary: "", items: [] };
-        let itemN = "", itemA = "";
+        const s = { date: todayStr(), clinic: "みなみ動物クリニック", cost: 0, summary: "" };
         return <Modal title="🏥 通院記録追加" onClose={() => setModal(null)}>
           <Inp label="日付" type="date" defaultValue={todayStr()} onChange={e => s.date = e.target.value} />
           <Inp label="病院名" defaultValue="みなみ動物クリニック" onChange={e => s.clinic = e.target.value} />
@@ -694,7 +914,7 @@ export default function App() {
           <Inp label="誕生日" type="date" defaultValue={pet.birth} onChange={e => s.birth = e.target.value} />
           <Inp label="犬種" defaultValue={pet.breed} onChange={e => s.breed = e.target.value} />
           <Sel label="性別" options={["♂ 去勢済", "♂ 未去勢", "♀ 避妊済", "♀ 未避妊"]} value={s.sex} onChange={e => s.sex = e.target.value} />
-          <Btn full onClick={() => { setPet(p => ({ ...p, ...s })); setModal(null); }}>保存</Btn>
+          <Btn full onClick={() => { updatePet(s); }}>保存</Btn>
         </Modal>;
       })()}
     </div>
