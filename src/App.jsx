@@ -502,16 +502,12 @@ export default function App() {
           {tab === "dash" && (
             <Dashboard
               pet={pet}
-              abnC={abnC}
-              totCost={totCost}
               lw={lw}
               tgt={tgt}
-              nextMed={nextMed}
-              nextDays={nextDays}
               setModal={setModal}
+              setTab={setTab}
               togTodo={togTodo}
               delTodo={delTodo}
-              delCondition={delCondition}
             />
           )}
           {tab === "meds" && <Meds pet={pet} setModal={setModal} delMed={delMed} delSchedule={delSchedule} />}

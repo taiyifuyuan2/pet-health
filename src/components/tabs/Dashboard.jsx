@@ -1,42 +1,41 @@
 import {
-  Stethoscope, AlertTriangle, Coins, Target, Pill,
-  Heart, Droplets, Bone, Zap, CircleDot, Ruler,
-  Plus, Pencil, Check,
+  Pill, Target, Pencil, Check, Cake, Calendar as CalIcon,
+  ListChecks, ChevronRight, Syringe,
 } from "lucide-react";
-import { T, daysTo, todayStr } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, IconCircle, IconBubble, AddBtn } from "../ui";
+import { T, daysTo, todayStr, calcAge } from "../../theme";
+import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, AddBtn } from "../ui";
 
-function conditionIcon(name) {
-  if (/心/.test(name)) return { Ic: Heart, color: "#e11d48" };
-  if (/脂/.test(name)) return { Ic: Droplets, color: "#ca8a04" };
-  if (/ヘルニア|椎間板|骨/.test(name)) return { Ic: Bone, color: "#6d5ccd" };
-  if (/電解質/.test(name)) return { Ic: Zap, color: "#0891b2" };
-  if (/血小板|血/.test(name)) return { Ic: CircleDot, color: "#db2777" };
-  if (/肥満|減量/.test(name)) return { Ic: Ruler, color: "#ea580c" };
-  return { Ic: Stethoscope, color: T.ac };
+function dogToHumanAge(dogAge) {
+  if (dogAge <= 0) return 0;
+  if (dogAge <= 1) return Math.round(dogAge * 15);
+  if (dogAge <= 2) return Math.round(15 + (dogAge - 1) * 9);
+  return Math.round(24 + (dogAge - 2) * 4);
 }
+
+function daysUntilBirthday(birth) {
+  if (!birth) return null;
+  const today = new Date(todayStr());
+  const b = new Date(birth);
+  const next = new Date(today.getFullYear(), b.getMonth(), b.getDate());
+  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  return Math.ceil((next - today) / 86400000);
+}
+
+const KIND_COLORS = {
+  med: "#6d5ccd",
+  schedule: "#2563eb",
+  todo: "#d97706",
+  visit: "#059669",
+};
 
 function TodoRow({ t, togTodo, delTodo, setModal }) {
   let dueLabel = null, dueColor = null, dueBg = null;
   if (t.due && !t.done) {
     const d = daysTo(t.due);
-    if (d < 0) {
-      dueLabel = "期限切れ";
-      dueColor = T.rd;
-      dueBg = T.rdB;
-    } else if (d === 0) {
-      dueLabel = "今日";
-      dueColor = T.rd;
-      dueBg = T.rdB;
-    } else if (d <= 3) {
-      dueLabel = `あと${d}日`;
-      dueColor = T.am;
-      dueBg = T.amB;
-    } else {
-      dueLabel = `${d}日後`;
-      dueColor = T.tx2;
-      dueBg = T.input;
-    }
+    if (d < 0) { dueLabel = "期限切れ"; dueColor = T.rd; dueBg = T.rdB; }
+    else if (d === 0) { dueLabel = "今日"; dueColor = T.rd; dueBg = T.rdB; }
+    else if (d <= 3) { dueLabel = `あと${d}日`; dueColor = T.am; dueBg = T.amB; }
+    else { dueLabel = `${d}日後`; dueColor = T.tx2; dueBg = T.input; }
   }
   return (
     <div
@@ -67,7 +66,6 @@ function TodoRow({ t, togTodo, delTodo, setModal }) {
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          transition: "all .2s",
         }}
       >
         {t.done && <Check size={14} color="#fff" strokeWidth={3} />}
@@ -75,18 +73,13 @@ function TodoRow({ t, togTodo, delTodo, setModal }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <span
           className={t.done ? "tdone" : ""}
-          style={{
-            fontSize: 13,
-            fontWeight: 600,
-            color: T.tx,
-            display: "block",
-          }}
+          style={{ fontSize: 13, fontWeight: 600, color: T.tx, display: "block" }}
         >
           {t.text}
         </span>
         {t.due && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-            <span style={{ fontSize: 10, color: T.tx3 }}>📅 {t.due}</span>
+            <span style={{ fontSize: 10, color: T.tx3 }}>{t.due}</span>
             {dueLabel && (
               <span
                 style={{
@@ -126,81 +119,231 @@ function TodoRow({ t, togTodo, delTodo, setModal }) {
   );
 }
 
-export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDays, setModal, togTodo, delTodo, delCondition }) {
-  const sevColor = (sev) => {
-    if (!sev) return T.tx3;
-    if (sev.includes("重") || sev.includes("緊")) return T.rd;
-    if (sev.includes("経過") || sev.includes("注意")) return T.am;
-    return T.bl;
+function MedReminder({ med, setModal }) {
+  const dl = daysTo(med.next);
+  const today = dl <= 0;
+  return (
+    <Card
+      glow={today}
+      style={{
+        background: today ? T.gr : T.card,
+        color: today ? "#fff" : T.tx,
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        border: "none",
+        padding: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: 14,
+          background: today ? "rgba(255,255,255,0.2)" : T.acL,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          color: today ? "#fff" : T.ac,
+        }}
+      >
+        <Pill size={22} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 800 }}>
+          {today ? "今日のお薬！" : `あと ${dl}日`}
+        </div>
+        <div style={{ fontSize: 11, opacity: 0.85, marginTop: 1 }}>
+          {med.name}
+          {med.purpose ? ` ・ ${med.purpose}` : ""}
+        </div>
+      </div>
+      {today && (
+        <Btn
+          small
+          onClick={() => setModal({ type: "dose", id: med.id })}
+          style={{
+            background: "#fff",
+            color: T.ac,
+            border: "none",
+            fontWeight: 800,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <Syringe size={14} /> 投与
+        </Btn>
+      )}
+    </Card>
+  );
+}
+
+function AgeCard({ pet }) {
+  const age = calcAge(pet.birth);
+  const human = dogToHumanAge(age);
+  const dToBd = daysUntilBirthday(pet.birth);
+  const lifespan = 15;
+  const pct = Math.min((age / lifespan) * 100, 100);
+  return (
+    <Card style={{ padding: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ flexShrink: 0 }}>
+          <div style={{ fontSize: 11, color: T.tx2, fontWeight: 600 }}>現在</div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: T.ac, letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {age}
+            <span style={{ fontSize: 14, color: T.tx2, fontWeight: 600, marginLeft: 2 }}>歳</span>
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, paddingLeft: 16, borderLeft: `1px solid ${T.bdr}` }}>
+          <div style={{ fontSize: 11, color: T.tx2, fontWeight: 600 }}>人間でいうと</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: T.tx, letterSpacing: "-0.02em" }}>
+            {human}
+            <span style={{ fontSize: 12, color: T.tx2, fontWeight: 600, marginLeft: 2 }}>歳</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <Bar val={age} max={lifespan} color={T.ac} h={8} />
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10, color: T.tx3, fontWeight: 600 }}>
+          <span>0歳</span>
+          <span>平均寿命 {lifespan}歳</span>
+        </div>
+      </div>
+      {dToBd != null && dToBd <= 30 && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 14px",
+            borderRadius: 12,
+            background: "linear-gradient(135deg,#fff1f2,#fce7f3)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: T.pk,
+            fontSize: 12,
+            fontWeight: 700,
+          }}
+        >
+          <Cake size={16} />
+          {dToBd === 0 ? "今日は誕生日！🎉" : `誕生日まであと ${dToBd}日！`}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function NextEventsCard({ pet, setTab }) {
+  const today = todayStr();
+  const events = [];
+  (pet.meds || []).forEach((m) => {
+    if (m.active && m.next && m.next >= today)
+      events.push({ date: m.next, kind: "med", title: `${m.name} 投与`, id: `med-${m.id}` });
+  });
+  (pet.schedule || []).forEach((s) => {
+    if (s.date >= today)
+      events.push({ date: s.date, kind: "schedule", title: s.label, id: `sch-${s.id}` });
+  });
+  (pet.todos || []).forEach((t) => {
+    if (t.due && !t.done && t.due >= today)
+      events.push({ date: t.due, kind: "todo", title: t.text, id: `td-${t.id}` });
+  });
+
+  events.sort((a, b) => a.date.localeCompare(b.date));
+  const upcoming = events.slice(0, 2);
+
+  if (upcoming.length === 0) return null;
+
+  const fmt = (date) => {
+    const d = new Date(date);
+    const dow = ["日", "月", "火", "水", "木", "金", "土"][d.getDay()];
+    const days = daysTo(date);
+    const suffix = days === 0 ? "今日" : days === 1 ? "明日" : `あと${days}日`;
+    return `${d.getMonth() + 1}/${d.getDate()}（${dow}） ${suffix}`;
   };
 
   return (
-    <>
-      {nextMed && nextDays !== null && (
-        <Card
-          glow
+    <Card style={{ padding: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          padding: "14px 16px 6px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <CalIcon size={16} color={T.ac} />
+          <span style={{ fontSize: 13, fontWeight: 800 }}>次の予定</span>
+        </div>
+        <button
+          onClick={() => setTab("cal")}
+          className="btnTap"
           style={{
-            background: nextDays <= 0 ? T.gr : `linear-gradient(135deg,${T.acL},${T.card})`,
-            color: nextDays <= 0 ? "#fff" : T.tx,
-            display: "flex",
-            alignItems: "center",
-            gap: 14,
+            background: "transparent",
             border: "none",
-            padding: 18,
+            color: T.ac,
+            fontSize: 11,
+            fontWeight: 700,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
           }}
         >
+          カレンダー <ChevronRight size={14} />
+        </button>
+      </div>
+      <div style={{ padding: "0 16px 14px" }}>
+        {upcoming.map((e) => (
           <div
+            key={e.id}
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              background: nextDays <= 0 ? "rgba(255,255,255,0.2)" : T.card,
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              boxShadow: nextDays <= 0 ? "none" : T.shadow,
-              color: nextDays <= 0 ? "#fff" : T.ac,
+              gap: 10,
+              padding: "10px 0",
+              borderTop: `1px solid ${T.bdr}`,
+              position: "relative",
             }}
           >
-            <Pill size={22} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 2 }}>
-              {nextDays <= 0 ? "今日のお薬！" : `次のお薬まで ${nextDays}日`}
+            <div
+              style={{
+                width: 4,
+                height: 32,
+                borderRadius: 4,
+                background: KIND_COLORS[e.kind] || T.ac,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: T.tx }}>{e.title}</div>
+              <div style={{ fontSize: 10, color: T.tx2, marginTop: 2, fontWeight: 600 }}>{fmt(e.date)}</div>
             </div>
-            <div style={{ fontSize: 12, opacity: 0.85 }}>{nextMed.name}</div>
           </div>
-          {nextDays <= 0 && (
-            <Btn
-              small
-              v="gh"
-              onClick={() => setModal({ type: "dose", id: nextMed.id })}
-              style={{ background: "#fff", color: T.ac, border: "none", fontWeight: 800 }}
-            >
-              投与記録
-            </Btn>
-          )}
-        </Card>
-      )}
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 4 }}>
-        {[
-          { Ic: Stethoscope, v: pet.conditions?.length || 0, l: "診断", c: T.rd, bg: "#fee2e2" },
-          { Ic: AlertTriangle, v: abnC, l: "異常値", c: T.am, bg: "#fef3c7" },
-          { Ic: Coins, v: totCost > 0 ? `¥${(totCost / 1000).toFixed(0)}K` : "¥0", l: "累計", c: T.gn, bg: "#d1fae5" },
-        ].map((s, i) => (
-          <Card key={i} style={{ textAlign: "center", padding: "16px 8px" }}>
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
-              <IconBubble bg={s.bg} size={40}>
-                <s.Ic size={20} color={s.c} />
-              </IconBubble>
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: s.c, letterSpacing: "-0.02em" }}>{s.v}</div>
-            <div style={{ fontSize: 10, color: T.tx2, marginTop: 2, fontWeight: 600 }}>{s.l}</div>
-          </Card>
         ))}
       </div>
+    </Card>
+  );
+}
+
+export default function Dashboard({ pet, lw, tgt, setModal, setTab, togTodo, delTodo }) {
+  const activeMeds = (pet.meds || [])
+    .filter((m) => m.active && m.next)
+    .sort((a, b) => a.next.localeCompare(b.next));
+
+  return (
+    <>
+      {activeMeds.length > 0 && (
+        <div>
+          {activeMeds.map((m) => (
+            <MedReminder key={m.id} med={m} setModal={setModal} />
+          ))}
+        </div>
+      )}
+
+      {pet.birth && <AgeCard pet={pet} />}
 
       {lw > 0 && pet.weights?.[0] && (
         <Card>
@@ -222,72 +365,51 @@ export default function Dashboard({ pet, abnC, totCost, lw, tgt, nextMed, nextDa
             <span style={{ color: T.gn, fontWeight: 800 }}>現在 {lw}kg</span>
             <span>あと {Math.max(lw - tgt, 0).toFixed(1)}kg</span>
           </div>
+          {pet.weights.length >= 2 && (() => {
+            const prev = pet.weights[pet.weights.length - 2].value;
+            const diff = lw - prev;
+            if (diff === 0) return null;
+            const c = diff < 0 ? T.gn : T.rd;
+            return (
+              <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: c }}>
+                前回比 {diff > 0 ? "+" : ""}
+                {diff.toFixed(1)}kg
+              </div>
+            );
+          })()}
         </Card>
       )}
 
-      <Sec icon="🏥" action={<AddBtn onClick={() => setModal({ type: "addCondition" })} />}>診断</Sec>
-      {!pet.conditions?.length ? (
-        <Empty icon="📋" text="診断記録はまだありません" />
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {pet.conditions.map((c) => {
-            const ci = conditionIcon(c.name);
-            return (
-              <Card key={c.id} accent={sevColor(c.sev)} style={{ padding: 14, marginBottom: 0 }}>
-                <div style={{ position: "absolute", top: 6, right: 6 }}>
-                  <DelBtn onClick={() => delCondition(c.id)} />
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6, paddingRight: 18 }}>
-                  <ci.Ic size={16} color={ci.color} />
-                  <div style={{ fontSize: 13, fontWeight: 800 }}>{c.name}</div>
-                </div>
-                <Badge text={c.sev} bg={`${sevColor(c.sev)}18`} color={sevColor(c.sev)} />
-                {c.note && <p style={{ fontSize: 10, color: T.tx2, marginTop: 6, lineHeight: 1.4 }}>{c.note}</p>}
-              </Card>
-            );
-          })}
-        </div>
-      )}
+      <NextEventsCard pet={pet} setTab={setTab} />
 
-      <Sec icon="✅" action={<AddBtn onClick={() => setModal({ type: "addTodo" })} />}>やること</Sec>
+      <Sec icon={<ListChecks size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addTodo" })} />}>
+        やること
+      </Sec>
       {(() => {
         const todos = pet.todos || [];
-        if (!todos.length) return <Empty icon="✨" text="今やることはありません" />;
         const active = todos.filter((t) => !t.done);
-        const done = todos.filter((t) => t.done);
-        const withDue = active
-          .filter((t) => t.due)
-          .sort((a, b) => a.due.localeCompare(b.due));
-        const noDue = active.filter((t) => !t.due);
+        if (active.length === 0) return <Empty text="今やることはありません" />;
+        const sorted = active
+          .slice()
+          .sort((a, b) => {
+            if (a.due && b.due) return a.due.localeCompare(b.due);
+            if (a.due) return -1;
+            if (b.due) return 1;
+            return 0;
+          })
+          .slice(0, 5);
+        const more = active.length - sorted.length;
         return (
           <>
-            {withDue.length > 0 && (
-              <>
-                <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 4 }}>📅 期日あり</div>
-                {withDue.map((t) => (
-                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
-                ))}
-              </>
-            )}
-            {noDue.length > 0 && (
-              <>
-                {withDue.length > 0 && (
-                  <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 12 }}>その他</div>
-                )}
-                {noDue.map((t) => (
-                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
-                ))}
-              </>
-            )}
-            {done.length > 0 && (
-              <>
-                <div style={{ fontSize: 11, color: T.tx3, fontWeight: 700, marginBottom: 6, marginTop: 12 }}>
-                  完了済み ({done.length})
-                </div>
-                {done.map((t) => (
-                  <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
-                ))}
-              </>
+            {sorted.map((t) => (
+              <TodoRow key={t.id} t={t} togTodo={togTodo} delTodo={delTodo} setModal={setModal} />
+            ))}
+            {more > 0 && (
+              <div style={{ textAlign: "center", marginTop: 4 }}>
+                <span style={{ fontSize: 11, color: T.tx3, fontWeight: 600 }}>
+                  他 {more} 件
+                </span>
+              </div>
             )}
           </>
         );
