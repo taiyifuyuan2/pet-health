@@ -31,7 +31,9 @@ export const css = `
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{display:none}
-html,body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;-webkit-font-smoothing:antialiased;background:${T.bg};color:${T.tx}}
+html{height:-webkit-fill-available}
+body{min-height:100vh;min-height:-webkit-fill-available;font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;-webkit-font-smoothing:antialiased;background:${T.bg};color:${T.tx};overscroll-behavior-y:none}
+#root{min-height:100vh;min-height:-webkit-fill-available}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}

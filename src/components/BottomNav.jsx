@@ -88,7 +88,7 @@ export default function BottomNav({ tab, setTab }) {
           className="slideUp"
           style={{
             position: "fixed",
-            bottom: 64,
+            bottom: "calc(56px + env(safe-area-inset-bottom, 0px))",
             left: 0,
             right: 0,
             background: T.card,
@@ -156,7 +156,8 @@ export default function BottomNav({ tab, setTab }) {
           bottom: 0,
           left: 0,
           right: 0,
-          height: 64,
+          height: "calc(56px + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
           background: "rgba(255,255,255,0.92)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
@@ -164,7 +165,6 @@ export default function BottomNav({ tab, setTab }) {
           display: "flex",
           alignItems: "center",
           zIndex: 100,
-          paddingBottom: "env(safe-area-inset-bottom, 0)",
           maxWidth: 520,
           margin: "0 auto",
         }}

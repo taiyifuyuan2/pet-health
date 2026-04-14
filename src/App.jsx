@@ -199,6 +199,24 @@ export default function App() {
     setSaving(false);
   };
 
+  const editMed = async (id, d) => {
+    setSaving(true);
+    try {
+      await supabase.from("meds").update({
+        name: d.name,
+        purpose: d.purpose,
+        freq: d.freq,
+        interval_days: d.interval,
+        next_dose: d.next,
+        remaining: d.remaining,
+        active: d.active,
+      }).eq("id", id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
   const recordDose = async (id) => {
     const med = pet?.meds?.find((m) => m.id === id);
     if (!med) return;
@@ -417,6 +435,7 @@ export default function App() {
           addTodo={addTodo}
           addCondition={addCondition}
           addMed={addMed}
+          editMed={editMed}
           addFood={addFood}
           addWeight={addWeight}
           addVisit={addVisit}
@@ -430,7 +449,16 @@ export default function App() {
   }
 
   return (
-    <div style={{ background: T.bg, minHeight: "100vh", color: T.tx, paddingBottom: 88 }}>
+    <div
+      style={{
+        background: T.bg,
+        minHeight: "100vh",
+        color: T.tx,
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "calc(56px + env(safe-area-inset-bottom, 0px) + 24px)",
+        WebkitOverflowScrolling: "touch",
+      }}
+    >
       <style>{css}</style>
       <input ref={fileRef} type="file" accept="image/*" onChange={handlePhoto} style={{ display: "none" }} />
 
@@ -444,7 +472,7 @@ export default function App() {
           lw={lw}
         />
 
-        <div className="fade" key={`${pid}-${tab}`} style={{ padding: "16px 18px 24px" }}>
+        <div className="fade" key={`${pid}-${tab}`} style={{ padding: "16px 18px 100px" }}>
           {tab === "dash" && (
             <Dashboard
               pet={pet}
@@ -492,6 +520,7 @@ export default function App() {
         addTodo={addTodo}
         addCondition={addCondition}
         addMed={addMed}
+        editMed={editMed}
         addFood={addFood}
         addWeight={addWeight}
         addVisit={addVisit}

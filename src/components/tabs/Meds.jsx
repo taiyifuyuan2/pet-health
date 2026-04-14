@@ -35,7 +35,25 @@ export default function Meds({ pet, setModal, delMed, delSchedule }) {
                       {now ? "投与記録" : "記録"}
                     </Btn>
                   )}
-                  <DelBtn onClick={() => delMed(m.id)} />
+                  <div style={{ display: "flex", gap: 2 }}>
+                    <button
+                      onClick={() => setModal({ type: "editMed", id: m.id })}
+                      className="btnTap"
+                      title="編集"
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: T.tx3,
+                        fontSize: 14,
+                        cursor: "pointer",
+                        padding: 6,
+                        borderRadius: 8,
+                      }}
+                    >
+                      ✏️
+                    </button>
+                    <DelBtn onClick={() => delMed(m.id)} />
+                  </div>
                 </div>
               </div>
               <div

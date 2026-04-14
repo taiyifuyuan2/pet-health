@@ -11,7 +11,11 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("touchstart", handler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("touchstart", handler);
+    };
   }, []);
 
   return (
@@ -20,22 +24,30 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
         background: T.grWarm,
         padding: "20px 18px 22px",
         position: "relative",
-        overflow: "hidden",
       }}
     >
       <div
         style={{
           position: "absolute",
-          top: -60,
-          right: -40,
-          width: 180,
-          height: 180,
-          borderRadius: "50%",
-          background: T.acL,
-          filter: "blur(40px)",
-          opacity: 0.7,
+          inset: 0,
+          overflow: "hidden",
+          pointerEvents: "none",
         }}
-      />
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: -60,
+            right: -40,
+            width: 180,
+            height: 180,
+            borderRadius: "50%",
+            background: T.acL,
+            filter: "blur(40px)",
+            opacity: 0.7,
+          }}
+        />
+      </div>
       <div
         style={{
           display: "flex",
@@ -73,7 +85,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
           )}
         </div>
 
-        <div style={{ flex: 1, minWidth: 0 }} ref={ref}>
+        <div style={{ flex: 1, minWidth: 0, position: "relative" }} ref={ref}>
           <div
             onClick={() => setOpen(!open)}
             style={{
@@ -122,15 +134,18 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
               className="pop"
               style={{
                 position: "absolute",
-                top: 80,
+                top: "calc(100% + 8px)",
                 left: 0,
                 right: 0,
                 background: T.card,
                 borderRadius: 16,
                 boxShadow: T.shadowHover,
                 padding: 8,
-                zIndex: 50,
+                zIndex: 999,
                 border: `1px solid ${T.bdr}`,
+                maxHeight: "70vh",
+                overflowY: "auto",
+                WebkitOverflowScrolling: "touch",
               }}
             >
               {pets.map((p) => (
@@ -143,15 +158,16 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                   className="btnTap"
                   style={{
                     width: "100%",
+                    minHeight: 52,
                     display: "flex",
                     alignItems: "center",
                     gap: 12,
-                    padding: "10px 12px",
+                    padding: "12px 16px",
                     background: pet?.id === p.id ? T.acL : "transparent",
                     border: "none",
                     borderRadius: 12,
                     cursor: "pointer",
-                    marginBottom: 2,
+                    marginBottom: 4,
                   }}
                 >
                   <div
@@ -205,6 +221,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                 className="btnTap"
                 style={{
                   width: "100%",
+                  minHeight: 48,
                   padding: "10px 12px",
                   background: "transparent",
                   border: `1.5px dashed ${T.bdr}`,

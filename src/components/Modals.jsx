@@ -9,6 +9,7 @@ export default function Modals({
   addTodo,
   addCondition,
   addMed,
+  editMed,
   addFood,
   addWeight,
   addVisit,
@@ -164,6 +165,68 @@ export default function Modals({
         </div>
         <Btn full onClick={() => { if (s.type && s.results.length) { addLab(s); setModal(null); } }}>
           検査結果を保存
+        </Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "editMed") {
+    const med = pet?.meds?.find((m) => m.id === modal.id);
+    if (!med) return null;
+    const FREQ = { 毎日: 1, 週1回: 7, 月1回: 30, "3ヶ月に1回": 90 };
+    const initialFreq =
+      Object.keys(FREQ).find((k) => FREQ[k] === med.interval) || "毎日";
+    const s = {
+      name: med.name,
+      purpose: med.purpose || "",
+      freq: initialFreq,
+      interval: med.interval || 1,
+      next: med.next,
+      remaining: med.remaining ?? 0,
+      active: med.active !== false,
+    };
+    return (
+      <Modal title="💊 お薬を編集" onClose={() => setModal(null)}>
+        <Inp label="薬名" defaultValue={med.name} onChange={(e) => (s.name = e.target.value)} />
+        <Inp label="目的" defaultValue={med.purpose || ""} onChange={(e) => (s.purpose = e.target.value)} />
+        <Sel
+          label="頻度"
+          options={["毎日", "週1回", "月1回", "3ヶ月に1回"]}
+          defaultValue={initialFreq}
+          onChange={(e) => {
+            s.freq = e.target.value;
+            s.interval = FREQ[e.target.value] || 1;
+          }}
+        />
+        <Inp label="次回投与日" type="date" defaultValue={med.next} onChange={(e) => (s.next = e.target.value)} />
+        <Inp
+          label="残り回数"
+          type="number"
+          defaultValue={med.remaining ?? 0}
+          onChange={(e) => (s.remaining = parseInt(e.target.value) || 0)}
+        />
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            background: T.card2,
+            borderRadius: 12,
+            marginBottom: 14,
+            cursor: "pointer",
+          }}
+        >
+          <span style={{ fontSize: 13, fontWeight: 600, color: T.tx }}>この薬を有効にする</span>
+          <input
+            type="checkbox"
+            defaultChecked={s.active}
+            onChange={(e) => (s.active = e.target.checked)}
+            style={{ width: 20, height: 20, accentColor: T.ac, cursor: "pointer" }}
+          />
+        </label>
+        <Btn full onClick={() => { if (s.name) editMed(med.id, s); }}>
+          保存
         </Btn>
       </Modal>
     );
