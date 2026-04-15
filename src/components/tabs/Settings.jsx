@@ -1,8 +1,24 @@
-import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil, Target, Phone, MapPin } from "lucide-react";
+import {
+  PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil,
+  Target, Phone, MapPin, Siren, FileText, Plus,
+} from "lucide-react";
 import { T, calcAge } from "../../theme";
-import { Card, Btn, Sec, Bar } from "../ui";
+import { Card, Btn, Sec, Bar, DelBtn, AddBtn, Empty } from "../ui";
 
-export default function Settings({ pet, pets, user, age, lw, tgt, fileRef, setModal, handleLogout, delPet }) {
+const DOC_TYPE_LABELS = {
+  rabies: "狂犬病ワクチン",
+  combo: "混合ワクチン",
+  pedigree: "血統書",
+  insurance: "保険証",
+  other: "その他",
+};
+
+export default function Settings({
+  pet, pets, user, age, lw, tgt,
+  emergencyContacts = [],
+  delContact, delDocument,
+  fileRef, setModal, handleLogout, delPet,
+}) {
   return (
     <>
       <Sec icon={<PawPrint size={14} color={T.ac} />}>プロフィール</Sec>
@@ -148,6 +164,127 @@ export default function Settings({ pet, pets, user, age, lw, tgt, fileRef, setMo
           </a>
         )}
       </Card>
+
+      <Sec
+        icon={<Siren size={14} color={T.rd} />}
+        action={<AddBtn onClick={() => setModal({ type: "addContact" })} />}
+      >
+        緊急連絡先
+      </Sec>
+      {emergencyContacts.length === 0 ? (
+        <Empty text="緊急連絡先を追加しましょう" />
+      ) : (
+        emergencyContacts.map((c) => (
+          <Card key={c.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 800 }}>{c.name}</div>
+                {c.note && (
+                  <div style={{ fontSize: 10, color: T.tx2, marginTop: 2, fontWeight: 500 }}>
+                    {c.note}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", gap: 2 }}>
+                <button
+                  onClick={() => setModal({ type: "editContact", id: c.id })}
+                  className="btnTap"
+                  title="編集"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: T.tx3,
+                    cursor: "pointer",
+                    padding: 6,
+                    borderRadius: 8,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Pencil size={14} />
+                </button>
+                <DelBtn onClick={() => delContact(c.id)} />
+              </div>
+            </div>
+            <a
+              href={`tel:${c.tel}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 14px",
+                background: T.rdB,
+                borderRadius: 12,
+                color: T.rd,
+                textDecoration: "none",
+                fontWeight: 700,
+                fontSize: 13,
+              }}
+            >
+              <Phone size={14} /> {c.tel}
+            </a>
+          </Card>
+        ))
+      )}
+
+      <Sec
+        icon={<FileText size={14} color={T.ac} />}
+        action={<AddBtn onClick={() => setModal({ type: "addDocument" })} />}
+      >
+        書類保管
+      </Sec>
+      {!(pet.documents?.length) ? (
+        <Empty text="書類を追加してペットの情報を整理しましょう" />
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {pet.documents.map((d) => (
+            <Card key={d.id} style={{ padding: 10, marginBottom: 0 }}>
+              {d.photo ? (
+                <a href={d.photo} target="_blank" rel="noopener">
+                  <img
+                    src={d.photo}
+                    alt={d.name}
+                    style={{
+                      width: "100%",
+                      aspectRatio: "1",
+                      objectFit: "cover",
+                      borderRadius: 10,
+                      background: T.input,
+                    }}
+                  />
+                </a>
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    aspectRatio: "1",
+                    background: T.input,
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: T.tx3,
+                  }}
+                >
+                  <FileText size={28} />
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 4, marginTop: 8 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: T.tx, lineHeight: 1.3 }}>
+                    {d.name}
+                  </div>
+                  <div style={{ fontSize: 9, color: T.tx3, marginTop: 2, fontWeight: 600 }}>
+                    {DOC_TYPE_LABELS[d.type] || "その他"}
+                    {d.date && ` ・ ${d.date}`}
+                  </div>
+                </div>
+                <DelBtn onClick={() => delDocument(d.id)} />
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Sec icon={<User size={14} color={T.ac} />}>アカウント</Sec>
       <Card>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./lib/supabase";
-import { fetchPets, seedInitialData, uploadPhoto } from "./lib/data";
+import { fetchPets, seedInitialData, uploadPhoto, fetchEmergencyContacts, uploadDocumentPhoto } from "./lib/data";
 import Auth from "./components/Auth";
 import { T, css, todayStr, calcAge, daysTo } from "./theme";
 import { Btn, Toast, Skeleton } from "./components/ui";
@@ -21,6 +21,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [pets, setPets] = useState([]);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
   const [pid, setPid] = useState(null);
   const [tab, setTab] = useState("dash");
   const [modal, setModal] = useState(null);
@@ -56,6 +57,8 @@ export default function App() {
         }
         setPets(data);
         if (data.length > 0) setPid(data[0].id);
+        const contacts = await fetchEmergencyContacts(user.id);
+        setEmergencyContacts(contacts);
       } catch (err) {
         console.error("Failed to load data:", err);
       } finally {
@@ -71,6 +74,8 @@ export default function App() {
     try {
       const data = await fetchPets(user.id);
       setPets(data);
+      const contacts = await fetchEmergencyContacts(user.id);
+      setEmergencyContacts(contacts);
     } catch (err) {
       console.error("Failed to reload:", err);
     } finally {
@@ -386,6 +391,71 @@ export default function App() {
     setSaving(false);
   };
 
+  const addContact = async (d) => {
+    if (!user) return;
+    setSaving(true);
+    try {
+      await supabase.from("emergency_contacts").insert({
+        user_id: user.id, name: d.name, tel: d.tel, note: d.note || null,
+      });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const editContact = async (id, d) => {
+    setSaving(true);
+    try {
+      await supabase.from("emergency_contacts").update({
+        name: d.name, tel: d.tel, note: d.note || null,
+      }).eq("id", id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const delContact = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from("emergency_contacts").delete().eq("id", id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  const addDocument = async (d, file) => {
+    if (!pet || !user) return;
+    setSaving(true);
+    try {
+      let photoUrl = null;
+      if (file) {
+        photoUrl = await uploadDocumentPhoto(user.id, pet.id, file);
+      }
+      await supabase.from("documents").insert({
+        pet_id: pet.id,
+        name: d.name,
+        type: d.type,
+        photo_url: photoUrl,
+        date: d.date || null,
+        note: d.note || null,
+      });
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
+  const delDocument = async (id) => {
+    setSaving(true);
+    try {
+      await supabase.from("documents").delete().eq("id", id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
   const editClinic = async (d) => {
     if (!pet) return;
     setSaving(true);
@@ -499,6 +569,10 @@ export default function App() {
           updatePet={updatePet}
           updateTargetWeight={updateTargetWeight}
           editClinic={editClinic}
+          addContact={addContact}
+          editContact={editContact}
+          emergencyContacts={emergencyContacts}
+          addDocument={addDocument}
           lw={lw}
           tgt={tgt}
         />
@@ -557,6 +631,9 @@ export default function App() {
               age={age}
               lw={lw}
               tgt={tgt}
+              emergencyContacts={emergencyContacts}
+              delContact={delContact}
+              delDocument={delDocument}
               fileRef={fileRef}
               setModal={setModal}
               handleLogout={handleLogout}
@@ -589,6 +666,11 @@ export default function App() {
         addPet={addPet}
         updatePet={updatePet}
         updateTargetWeight={updateTargetWeight}
+        editClinic={editClinic}
+        addContact={addContact}
+        editContact={editContact}
+        emergencyContacts={emergencyContacts}
+        addDocument={addDocument}
         lw={lw}
         tgt={tgt}
       />

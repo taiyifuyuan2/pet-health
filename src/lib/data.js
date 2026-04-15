@@ -13,7 +13,7 @@ export async function fetchPets(userId) {
 
   // Fetch related data for each pet in parallel
   for (const pet of pets) {
-    const [conditions, meds, labs, visits, weights, foods, todos, schedule] = await Promise.all([
+    const [conditions, meds, labs, visits, weights, foods, todos, schedule, documents] = await Promise.all([
       supabase.from('conditions').select('*').eq('pet_id', pet.id),
       supabase.from('meds').select('*').eq('pet_id', pet.id),
       supabase.from('labs').select('*, lab_results(*)').eq('pet_id', pet.id).order('date', { ascending: false }),
@@ -22,6 +22,7 @@ export async function fetchPets(userId) {
       supabase.from('foods').select('*').eq('pet_id', pet.id).order('created_at', { ascending: false }),
       supabase.from('todos').select('*').eq('pet_id', pet.id).order('created_at'),
       supabase.from('schedule').select('*').eq('pet_id', pet.id).order('date'),
+      supabase.from('documents').select('*').eq('pet_id', pet.id).order('created_at', { ascending: false }),
     ]);
 
     pet.conditions = (conditions.data || []).map(c => ({
@@ -87,6 +88,14 @@ export async function fetchPets(userId) {
       id: s.id,
       date: s.date,
       label: s.label,
+    }));
+    pet.documents = (documents.data || []).map(d => ({
+      id: d.id,
+      name: d.name,
+      type: d.type,
+      photo: d.photo_url,
+      date: d.date,
+      note: d.note,
     }));
 
     // Map DB fields to app fields
@@ -316,6 +325,31 @@ export async function seedInitialData(userId) {
       );
     }
   }
+}
+
+// Fetch emergency contacts for the user
+export async function fetchEmergencyContacts(userId) {
+  const { data, error } = await supabase
+    .from('emergency_contacts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('sort_order');
+  if (error) { console.error(error); return []; }
+  return data || [];
+}
+
+// Upload document photo to storage
+export async function uploadDocumentPhoto(userId, petId, file) {
+  const ext = file.name.split('.').pop();
+  const filePath = `${userId}/${petId}/docs/${Date.now()}.${ext}`;
+  const { error: uploadError } = await supabase.storage
+    .from('pet-photos')
+    .upload(filePath, file);
+  if (uploadError) throw uploadError;
+  const { data: { publicUrl } } = supabase.storage
+    .from('pet-photos')
+    .getPublicUrl(filePath);
+  return publicUrl;
 }
 
 // Upload photo to storage

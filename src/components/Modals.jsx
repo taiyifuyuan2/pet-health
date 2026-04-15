@@ -1,5 +1,86 @@
+import { useState, useRef } from "react";
+import { Phone, Upload } from "lucide-react";
 import { Modal, Inp, Sel, Btn } from "./ui";
 import { T, todayStr } from "../theme";
+
+function AddDocumentBody({ addDocument, setModal }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [name, setName] = useState("");
+  const [type, setType] = useState("rabies");
+  const [date, setDate] = useState(todayStr());
+  const [note, setNote] = useState("");
+  const inputRef = useRef(null);
+  const handleFile = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFile(f);
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview(ev.target.result);
+    reader.readAsDataURL(f);
+  };
+  const TYPE_OPTIONS = {
+    "狂犬病ワクチン": "rabies",
+    "混合ワクチン": "combo",
+    "血統書": "pedigree",
+    "保険証": "insurance",
+    "その他": "other",
+  };
+  return (
+    <Modal title="📋 書類を追加" onClose={() => setModal(null)}>
+      <div
+        onClick={() => inputRef.current?.click()}
+        className="btnTap"
+        style={{
+          border: `2px dashed ${T.bdr2}`,
+          borderRadius: 14,
+          padding: 20,
+          textAlign: "center",
+          cursor: "pointer",
+          marginBottom: 14,
+          background: T.card2,
+        }}
+      >
+        {preview ? (
+          <img
+            src={preview}
+            alt=""
+            style={{ maxWidth: "100%", maxHeight: 220, borderRadius: 10 }}
+          />
+        ) : (
+          <div style={{ color: T.tx3 }}>
+            <Upload size={28} style={{ marginBottom: 6 }} />
+            <div style={{ fontSize: 12, fontWeight: 600 }}>タップして写真を選択</div>
+          </div>
+        )}
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFile}
+        style={{ display: "none" }}
+      />
+      <Inp label="書類名" placeholder="例: 狂犬病予防接種証明書 2026" value={name} onChange={(e) => setName(e.target.value)} />
+      <Sel
+        label="種類"
+        options={Object.keys(TYPE_OPTIONS)}
+        onChange={(e) => setType(TYPE_OPTIONS[e.target.value] || "other")}
+      />
+      <Inp label="日付" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <Inp label="メモ（任意）" placeholder="補足情報" value={note} onChange={(e) => setNote(e.target.value)} />
+      <Btn
+        full
+        onClick={() => {
+          if (!name) return;
+          addDocument({ name, type, date, note }, file);
+        }}
+      >
+        保存
+      </Btn>
+    </Modal>
+  );
+}
 
 export default function Modals({
   modal,
@@ -22,6 +103,10 @@ export default function Modals({
   updatePet,
   updateTargetWeight,
   editClinic,
+  addContact,
+  editContact,
+  emergencyContacts = [],
+  addDocument,
   lw,
   tgt,
 }) {
@@ -307,6 +392,91 @@ export default function Modals({
         />
         <Btn full onClick={() => { if (s.name && s.birth) addPet(s); }}>追加</Btn>
       </Modal>
+    );
+  }
+
+  if (modal.type === "addContact") {
+    const s = { name: "", tel: "", note: "" };
+    return (
+      <Modal title="🚨 緊急連絡先を追加" onClose={() => setModal(null)}>
+        <Inp label="名称" placeholder="例: ペット中毒110番" onChange={(e) => (s.name = e.target.value)} />
+        <Inp label="電話番号" type="tel" placeholder="例: 072-726-9923" onChange={(e) => (s.tel = e.target.value)} />
+        <Inp label="メモ（任意）" placeholder="24時間対応など" onChange={(e) => (s.note = e.target.value)} />
+        <Btn full onClick={() => { if (s.name && s.tel) addContact(s); }}>追加</Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "editContact") {
+    const c = emergencyContacts.find((x) => x.id === modal.id);
+    if (!c) return null;
+    const s = { name: c.name, tel: c.tel, note: c.note || "" };
+    return (
+      <Modal title="🚨 緊急連絡先を編集" onClose={() => setModal(null)}>
+        <Inp label="名称" defaultValue={c.name} onChange={(e) => (s.name = e.target.value)} />
+        <Inp label="電話番号" type="tel" defaultValue={c.tel} onChange={(e) => (s.tel = e.target.value)} />
+        <Inp label="メモ（任意）" defaultValue={c.note || ""} onChange={(e) => (s.note = e.target.value)} />
+        <Btn full onClick={() => { if (s.name && s.tel) editContact(c.id, s); }}>保存</Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "emergencyList") {
+    return (
+      <Modal title="🚨 緊急連絡先" onClose={() => setModal(null)}>
+        {emergencyContacts.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 30, color: T.tx3 }}>
+            緊急連絡先が登録されていません
+          </div>
+        ) : (
+          emergencyContacts.map((c) => (
+            <a
+              key={c.id}
+              href={`tel:${c.tel}`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "14px 16px",
+                background: T.rdB,
+                borderRadius: 14,
+                marginBottom: 10,
+                textDecoration: "none",
+                color: T.tx,
+              }}
+            >
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  background: T.rd,
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Phone size={20} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: T.tx }}>{c.name}</div>
+                <div style={{ fontSize: 12, color: T.rd, fontWeight: 700, marginTop: 2 }}>{c.tel}</div>
+                {c.note && (
+                  <div style={{ fontSize: 10, color: T.tx2, marginTop: 2 }}>{c.note}</div>
+                )}
+              </div>
+            </a>
+          ))
+        )}
+      </Modal>
+    );
+  }
+
+  if (modal.type === "addDocument") {
+    return (
+      <AddDocumentBody addDocument={addDocument} setModal={setModal} />
     );
   }
 

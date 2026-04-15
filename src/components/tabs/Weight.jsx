@@ -1,6 +1,66 @@
-import { Scale, Target, TrendingUp, TrendingDown, Plus } from "lucide-react";
+import { Scale, Target, TrendingUp, TrendingDown, Plus, BarChart3 } from "lucide-react";
 import { T } from "../../theme";
 import { Card, Btn, Sec, DelBtn } from "../ui";
+
+function analyzeTrend(weights, targetWeight) {
+  if (weights.length < 2) return null;
+  const latest = weights[weights.length - 1];
+  const first = weights[0];
+  const now = new Date();
+
+  const weekAgo = new Date(now);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekData = weights.filter((w) => new Date(w.date) >= weekAgo);
+  const weekChange = weekData.length >= 2 ? latest.value - weekData[0].value : null;
+
+  const monthAgo = new Date(now);
+  monthAgo.setMonth(monthAgo.getMonth() - 1);
+  const monthData = weights.filter((w) => new Date(w.date) >= monthAgo);
+  const monthChange = monthData.length >= 2 ? latest.value - monthData[0].value : null;
+
+  const totalChange = latest.value - first.value;
+  const totalDays = (new Date(latest.date) - new Date(first.date)) / 86400000;
+  const monthlyRate = totalDays > 0 ? (totalChange / totalDays) * 30 : 0;
+
+  const remaining = latest.value - targetWeight;
+  const monthsToGoal =
+    monthlyRate < 0 && remaining > 0 ? Math.ceil(remaining / Math.abs(monthlyRate)) : null;
+
+  return { first, latest, weekChange, monthChange, totalChange, monthlyRate, monthsToGoal, remaining };
+}
+
+function TrendCell({ label, value }) {
+  if (value === null || value === undefined) {
+    return (
+      <div style={{ flex: 1, padding: "12px 10px", background: T.card2, borderRadius: 12, textAlign: "center" }}>
+        <div style={{ fontSize: 10, color: T.tx3, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+        <div style={{ fontSize: 13, color: T.tx3, fontWeight: 700 }}>—</div>
+      </div>
+    );
+  }
+  const color = value > 0 ? T.rd : value < 0 ? T.gn : T.tx3;
+  const bg = value > 0 ? T.rdB : value < 0 ? T.gnB : T.input;
+  const Ic = value > 0 ? TrendingUp : value < 0 ? TrendingDown : null;
+  return (
+    <div style={{ flex: 1, padding: "12px 10px", background: bg, borderRadius: 12, textAlign: "center" }}>
+      <div style={{ fontSize: 10, color: T.tx3, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div
+        style={{
+          fontSize: 14,
+          color,
+          fontWeight: 800,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        {Ic && <Ic size={13} />}
+        {value > 0 ? "+" : ""}
+        {value.toFixed(1)}kg
+      </div>
+    </div>
+  );
+}
 
 export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
   const weights = pet.weights || [];
@@ -105,6 +165,108 @@ export default function Weight({ pet, lw, tgt, setModal, delWeight }) {
           </svg>
         </Card>
       )}
+
+      {(() => {
+        const t = analyzeTrend(weights, tgt);
+        if (!t) return null;
+        return (
+          <Card>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <BarChart3 size={16} color={T.ac} />
+              <span style={{ fontSize: 13, fontWeight: 800 }}>トレンド分析</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <TrendCell label="直近1週間" value={t.weekChange} />
+              <TrendCell label="直近1ヶ月" value={t.monthChange} />
+            </div>
+            <div
+              style={{
+                padding: "12px 14px",
+                background: T.card2,
+                borderRadius: 12,
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ fontSize: 10, color: T.tx3, fontWeight: 600, marginBottom: 4 }}>
+                累計変化
+              </div>
+              <div style={{ fontSize: 12, color: T.tx, fontWeight: 700 }}>
+                開始 {t.first.value}kg → 現在 {t.latest.value}kg
+                <span
+                  style={{
+                    marginLeft: 8,
+                    color: t.totalChange > 0 ? T.rd : t.totalChange < 0 ? T.gn : T.tx3,
+                    fontWeight: 800,
+                  }}
+                >
+                  ({t.totalChange > 0 ? "+" : ""}
+                  {t.totalChange.toFixed(1)}kg)
+                </span>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: "12px 14px",
+                background: T.card2,
+                borderRadius: 12,
+                marginBottom: 10,
+              }}
+            >
+              <div style={{ fontSize: 10, color: T.tx3, fontWeight: 600, marginBottom: 4 }}>
+                減量ペース
+              </div>
+              <div style={{ fontSize: 12, color: T.tx, fontWeight: 700 }}>
+                月あたり平均{" "}
+                <span style={{ color: t.monthlyRate < 0 ? T.gn : t.monthlyRate > 0 ? T.rd : T.tx3 }}>
+                  {t.monthlyRate > 0 ? "+" : ""}
+                  {t.monthlyRate.toFixed(2)}kg
+                </span>
+              </div>
+            </div>
+            {t.monthsToGoal != null && (
+              <div
+                style={{
+                  padding: "12px 14px",
+                  background: T.gnB,
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <Target size={14} color={T.gn} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.gn }}>
+                  このペースであと約 {t.monthsToGoal}ヶ月で目標達成
+                </span>
+              </div>
+            )}
+            {t.remaining <= 0 && (
+              <div
+                style={{
+                  padding: "12px 14px",
+                  background: T.gnB,
+                  borderRadius: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                }}
+              >
+                <Target size={14} color={T.gn} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: T.gn }}>
+                  🎉 目標達成おめでとう！
+                </span>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       <Sec
         icon={<Scale size={14} color={T.ac} />}

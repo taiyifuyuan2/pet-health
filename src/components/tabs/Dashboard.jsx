@@ -1,6 +1,6 @@
 import {
   Pill, Target, Pencil, Check, Cake, Calendar as CalIcon,
-  ListChecks, ChevronRight, Syringe,
+  ListChecks, ChevronRight, Syringe, Siren,
 } from "lucide-react";
 import { T, daysTo, todayStr, calcAge } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, AddBtn } from "../ui";
@@ -344,6 +344,27 @@ export default function Dashboard({ pet, lw, tgt, setModal, setTab, togTodo, del
 
   return (
     <>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
+        <button
+          onClick={() => setModal({ type: "emergencyList" })}
+          className="btnTap"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "6px 12px",
+            background: T.rdB,
+            color: T.rd,
+            border: `1.5px solid ${T.rd}33`,
+            borderRadius: 20,
+            fontSize: 11,
+            fontWeight: 800,
+            cursor: "pointer",
+          }}
+        >
+          <Siren size={13} /> 緊急
+        </button>
+      </div>
       {activeMeds.length > 0 && (
         <div>
           {activeMeds.map((m) => (
