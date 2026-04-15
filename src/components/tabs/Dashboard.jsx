@@ -1,6 +1,6 @@
 import {
   Pill, Target, Pencil, Check, Cake, Calendar as CalIcon,
-  ListChecks, ChevronRight, Syringe, Siren,
+  ListChecks, ChevronRight, Syringe, AlertTriangle, Phone,
 } from "lucide-react";
 import { T, daysTo, todayStr, calcAge } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, AddBtn } from "../ui";
@@ -344,25 +344,66 @@ export default function Dashboard({ pet, lw, tgt, setModal, setTab, togTodo, del
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10 }}>
-        <button
-          onClick={() => setModal({ type: "emergencyList" })}
-          className="btnTap"
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+        <a
+          href={`tel:${pet.clinic_tel || ""}`}
+          className="btnTap cardHover"
           style={{
-            display: "inline-flex",
+            textDecoration: "none",
+            background: T.gnB,
+            border: `1.5px solid ${T.gn}22`,
+            borderRadius: 16,
+            padding: "14px 10px",
+            textAlign: "center",
+            boxShadow: T.shadow,
+            display: "flex",
+            flexDirection: "column",
             alignItems: "center",
-            gap: 5,
-            padding: "6px 12px",
-            background: T.rdB,
-            color: T.rd,
-            border: `1.5px solid ${T.rd}33`,
-            borderRadius: 20,
-            fontSize: 11,
-            fontWeight: 800,
-            cursor: "pointer",
+            gap: 4,
+            transition: "all .2s",
           }}
         >
-          <Siren size={13} /> 緊急
+          <Phone size={22} color={T.gn} />
+          <div style={{ fontSize: 13, fontWeight: 800, color: T.gn, marginTop: 2 }}>
+            かかりつけ医
+          </div>
+          <div
+            style={{
+              fontSize: 10,
+              color: T.tx2,
+              fontWeight: 600,
+              maxWidth: "100%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {pet.clinic_name || "未設定"}
+          </div>
+        </a>
+        <button
+          onClick={() => setModal({ type: "emergencyList" })}
+          className="btnTap cardHover"
+          style={{
+            background: T.rdB,
+            border: `1.5px solid ${T.rd}22`,
+            borderRadius: 16,
+            padding: "14px 10px",
+            textAlign: "center",
+            boxShadow: T.shadow,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+            cursor: "pointer",
+            transition: "all .2s",
+          }}
+        >
+          <AlertTriangle size={22} color={T.rd} />
+          <div style={{ fontSize: 13, fontWeight: 800, color: T.rd, marginTop: 2 }}>
+            緊急連絡
+          </div>
+          <div style={{ fontSize: 10, color: T.tx2, fontWeight: 600 }}>夜間・中毒</div>
         </button>
       </div>
       {activeMeds.length > 0 && (
