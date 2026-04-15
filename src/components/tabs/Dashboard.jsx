@@ -16,9 +16,18 @@ function daysUntilBirthday(birth) {
   if (!birth) return null;
   const today = new Date(todayStr());
   const b = new Date(birth);
-  const next = new Date(today.getFullYear(), b.getMonth(), b.getDate());
-  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  const thisYear = new Date(today.getFullYear(), b.getMonth(), b.getDate());
+  const next = thisYear < today ? new Date(today.getFullYear() + 1, b.getMonth(), b.getDate()) : thisYear;
   return Math.ceil((next - today) / 86400000);
+}
+
+function daysSinceLastBirthday(birth) {
+  if (!birth) return 0;
+  const today = new Date(todayStr());
+  const b = new Date(birth);
+  const thisYear = new Date(today.getFullYear(), b.getMonth(), b.getDate());
+  const last = thisYear > today ? new Date(today.getFullYear() - 1, b.getMonth(), b.getDate()) : thisYear;
+  return Math.floor((today - last) / 86400000);
 }
 
 const KIND_COLORS = {
@@ -184,8 +193,10 @@ function AgeCard({ pet }) {
   const age = calcAge(pet.birth);
   const human = dogToHumanAge(age);
   const dToBd = daysUntilBirthday(pet.birth);
-  const lifespan = 15;
-  const pct = Math.min((age / lifespan) * 100, 100);
+  const elapsed = daysSinceLastBirthday(pet.birth);
+  const soon = dToBd != null && dToBd <= 30;
+  const isBirthday = dToBd === 0;
+  const barColor = soon ? T.ac : T.bdr2;
   return (
     <Card style={{ padding: 18 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -204,32 +215,30 @@ function AgeCard({ pet }) {
           </div>
         </div>
       </div>
-      <div style={{ marginTop: 14 }}>
-        <Bar val={age} max={lifespan} color={T.ac} h={8} />
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10, color: T.tx3, fontWeight: 600 }}>
-          <span>0歳</span>
-          <span>平均寿命 {lifespan}歳</span>
-        </div>
-      </div>
-      {dToBd != null && dToBd <= 30 && (
+      <div style={{ marginTop: 16 }}>
+        <Bar val={elapsed} max={365} color={barColor} h={8} />
         <div
           style={{
-            marginTop: 12,
+            marginTop: 10,
             padding: "10px 14px",
             borderRadius: 12,
-            background: "linear-gradient(135deg,#fff1f2,#fce7f3)",
+            background: isBirthday
+              ? "linear-gradient(135deg,#fff1f2,#fce7f3)"
+              : soon
+              ? T.acL
+              : T.card2,
             display: "flex",
             alignItems: "center",
             gap: 8,
-            color: T.pk,
+            color: isBirthday ? T.pk : soon ? T.ac : T.tx2,
             fontSize: 12,
             fontWeight: 700,
           }}
         >
           <Cake size={16} />
-          {dToBd === 0 ? "今日は誕生日！🎉" : `誕生日まであと ${dToBd}日！`}
+          {isBirthday ? "🎉 今日はお誕生日！" : `次の誕生日まで あと ${dToBd}日`}
         </div>
-      )}
+      </div>
     </Card>
   );
 }
