@@ -1,4 +1,4 @@
-import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil, Target } from "lucide-react";
+import { PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil, Target, Phone, MapPin } from "lucide-react";
 import { T, calcAge } from "../../theme";
 import { Card, Btn, Sec, Bar } from "../ui";
 
@@ -96,12 +96,57 @@ export default function Settings({ pet, pets, user, age, lw, tgt, fileRef, setMo
 
       <Sec icon={<Stethoscope size={14} color={T.ac} />}>かかりつけ医</Sec>
       <Card>
-        <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>みなみ動物クリニック</div>
-        <div style={{ fontSize: 11, color: T.tx2, lineHeight: 1.7, fontWeight: 500 }}>
-          鹿児島市谷山中央4丁目4954-26
-          <br />
-          099-210-5787
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, flex: 1, minWidth: 0 }}>{pet.clinic_name}</div>
+          <Btn
+            small
+            v="gh"
+            onClick={() => setModal({ type: "editClinic" })}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+          >
+            <Pencil size={14} /> 編集
+          </Btn>
         </div>
+        {pet.clinic_address && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 8,
+              fontSize: 11,
+              color: T.tx2,
+              fontWeight: 500,
+              marginBottom: 10,
+              lineHeight: 1.5,
+            }}
+          >
+            <MapPin size={13} color={T.tx3} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span>{pet.clinic_address}</span>
+          </div>
+        )}
+        {pet.clinic_tel && (
+          <a
+            href={`tel:${pet.clinic_tel}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 14px",
+              background: T.acL,
+              borderRadius: 12,
+              color: T.ac,
+              textDecoration: "none",
+              fontWeight: 700,
+              fontSize: 13,
+            }}
+          >
+            <Phone size={14} />
+            {pet.clinic_tel}
+            <span style={{ fontSize: 10, color: T.tx2, fontWeight: 500, marginLeft: 4 }}>
+              タップで発信
+            </span>
+          </a>
+        )}
       </Card>
 
       <Sec icon={<User size={14} color={T.ac} />}>アカウント</Sec>

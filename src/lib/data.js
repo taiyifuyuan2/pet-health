@@ -94,6 +94,9 @@ export async function fetchPets(userId) {
     pet.birth = pet.birth;
     pet.emoji = pet.emoji || '🐾';
     pet.target_weight = pet.target_weight != null ? parseFloat(pet.target_weight) : 5.0;
+    pet.clinic_name = pet.clinic_name || 'みなみ動物クリニック';
+    pet.clinic_address = pet.clinic_address || '鹿児島市谷山中央4丁目4954-26';
+    pet.clinic_tel = pet.clinic_tel || '099-210-5787';
   }
 
   return pets;

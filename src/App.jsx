@@ -386,6 +386,21 @@ export default function App() {
     setSaving(false);
   };
 
+  const editClinic = async (d) => {
+    if (!pet) return;
+    setSaving(true);
+    try {
+      await supabase.from("pets").update({
+        clinic_name: d.name,
+        clinic_address: d.address,
+        clinic_tel: d.tel,
+      }).eq("id", pet.id);
+      await reload();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+    setModal(null);
+  };
+
   const updateTargetWeight = async (v) => {
     if (!pet) return;
     const n = parseFloat(v);
@@ -483,6 +498,7 @@ export default function App() {
           addPet={addPet}
           updatePet={updatePet}
           updateTargetWeight={updateTargetWeight}
+          editClinic={editClinic}
           lw={lw}
           tgt={tgt}
         />

@@ -21,6 +21,7 @@ export default function Modals({
   addPet,
   updatePet,
   updateTargetWeight,
+  editClinic,
   lw,
   tgt,
 }) {
@@ -305,6 +306,22 @@ export default function Modals({
           onChange={(e) => (s.sex = e.target.value)}
         />
         <Btn full onClick={() => { if (s.name && s.birth) addPet(s); }}>追加</Btn>
+      </Modal>
+    );
+  }
+
+  if (modal.type === "editClinic" && pet) {
+    const s = {
+      name: pet.clinic_name || "",
+      address: pet.clinic_address || "",
+      tel: pet.clinic_tel || "",
+    };
+    return (
+      <Modal title="🏥 かかりつけ医を編集" onClose={() => setModal(null)}>
+        <Inp label="病院名" defaultValue={s.name} onChange={(e) => (s.name = e.target.value)} />
+        <Inp label="住所" defaultValue={s.address} onChange={(e) => (s.address = e.target.value)} />
+        <Inp label="電話番号" type="tel" defaultValue={s.tel} onChange={(e) => (s.tel = e.target.value)} />
+        <Btn full onClick={() => editClinic(s)}>保存</Btn>
       </Modal>
     );
   }
