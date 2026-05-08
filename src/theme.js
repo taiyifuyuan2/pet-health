@@ -1,16 +1,16 @@
 export const T = {
-  bg: "#faf8f5",
+  bg: "#fdf8f9",
   card: "#ffffff",
-  card2: "#f8f6f2",
-  input: "#f3f1ed",
-  bdr: "#ebe7df",
-  bdr2: "#ddd8ce",
-  tx: "#1a1814",
-  tx2: "#6b6560",
-  tx3: "#a8a29e",
-  ac: "#6d5ccd",
-  acG: "rgba(109,92,205,0.07)",
-  acL: "#ede8ff",
+  card2: "#faf5f6",
+  input: "#f7f0f1",
+  bdr: "#f0e4e6",
+  bdr2: "#e5d8db",
+  tx: "#2e1a1e",
+  tx2: "#7a5c62",
+  tx3: "#b09a9e",
+  ac: "#d4677e",
+  acG: "rgba(212,103,126,0.08)",
+  acL: "#fdf0f3",
   gn: "#059669",
   gnB: "#ecfdf5",
   rd: "#e11d48",
@@ -20,11 +20,11 @@ export const T = {
   bl: "#2563eb",
   cy: "#0891b2",
   pk: "#db2777",
-  gr: "linear-gradient(135deg,#6d5ccd,#8b7cf0)",
-  grWarm: "linear-gradient(135deg, #f5f0ff 0%, #faf8f5 100%)",
-  shadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)",
-  shadowHover: "0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.05)",
-  shadowLg: "0 -4px 24px rgba(0,0,0,0.08)",
+  gr: "linear-gradient(135deg,#d4677e,#e8a0b0)",
+  grWarm: "linear-gradient(135deg, #fdf0f3 0%, #fdf8f9 100%)",
+  shadow: "0 1px 3px rgba(46,26,30,0.04), 0 4px 12px rgba(46,26,30,0.03)",
+  shadowHover: "0 2px 8px rgba(46,26,30,0.06), 0 8px 24px rgba(46,26,30,0.05)",
+  shadowLg: "0 -4px 24px rgba(46,26,30,0.08)",
 };
 
 export const css = `
@@ -67,7 +67,7 @@ export const googleCalUrl = ({ title, date, description }) => {
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 };
 
-export const PET_COLORS = ["#6d5ccd", "#ca8a04", "#059669", "#db2777", "#2563eb", "#0891b2"];
+export const PET_COLORS = ["#d4677e", "#ca8a04", "#059669", "#b85c8a", "#2563eb", "#0891b2"];
 export const petColor = (pets, petId) => {
   const i = pets.findIndex((p) => p.id === petId);
   return PET_COLORS[(i < 0 ? 0 : i) % PET_COLORS.length];
