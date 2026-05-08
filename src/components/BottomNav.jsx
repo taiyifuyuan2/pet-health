@@ -1,12 +1,12 @@
 import { useState } from "react";
 import {
-  Home, Pill, Calendar, Stethoscope, MoreHorizontal, X,
-  FlaskConical, UtensilsCrossed, Scale, Coins, Settings,
+  Heart, Pill, Calendar, Stethoscope, LayoutGrid, X,
+  FlaskConical, UtensilsCrossed, Scale, Receipt, Settings,
 } from "lucide-react";
 import { T } from "../theme";
 
 const PRIMARY = [
-  { id: "dash", Ic: Home, lb: "ホーム" },
+  { id: "dash", Ic: Heart, lb: "ホーム" },
   { id: "meds", Ic: Pill, lb: "お薬" },
   { id: "cal", Ic: Calendar, lb: "カレンダー" },
   { id: "visits", Ic: Stethoscope, lb: "通院" },
@@ -16,7 +16,7 @@ const MORE = [
   { id: "labs", Ic: FlaskConical, lb: "検査" },
   { id: "food", Ic: UtensilsCrossed, lb: "食事" },
   { id: "wt", Ic: Scale, lb: "体重" },
-  { id: "cost", Ic: Coins, lb: "費用" },
+  { id: "cost", Ic: Receipt, lb: "費用" },
   { id: "cfg", Ic: Settings, lb: "設定" },
 ];
 
@@ -206,7 +206,7 @@ export default function BottomNav({ tab, setTab }) {
               justifyContent: "center",
             }}
           >
-            {open ? <X size={22} /> : <MoreHorizontal size={22} />}
+            {open ? <X size={22} /> : <LayoutGrid size={22} />}
           </div>
           <span
             style={{

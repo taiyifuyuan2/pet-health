@@ -7,7 +7,7 @@ import { T, todayStr, googleCalUrl, petColor } from "../../theme";
 import { Card, Sec, Empty, Btn } from "../ui";
 
 const KIND = {
-  med:      { Ic: Pill,            color: "#6d5ccd", label: "お薬" },
+  med:      { Ic: Pill,            color: "#d4677e", label: "お薬" },
   schedule: { Ic: CalIcon,         color: "#2563eb", label: "予定" },
   visit:    { Ic: Stethoscope,     color: "#059669", label: "通院" },
   lab:      { Ic: FlaskConical,    color: "#0891b2", label: "検査" },

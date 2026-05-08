@@ -1,6 +1,6 @@
 import {
   Pill, Target, Pencil, Check, Cake, Calendar as CalIcon,
-  ListChecks, ChevronRight, Syringe, AlertTriangle, Phone,
+  ListChecks, ChevronRight, Syringe, Siren, Phone,
 } from "lucide-react";
 import { T, daysTo, todayStr, calcAge } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, AddBtn } from "../ui";
@@ -31,7 +31,7 @@ function daysSinceLastBirthday(birth) {
 }
 
 const KIND_COLORS = {
-  med: "#6d5ccd",
+  med: "#d4677e",
   schedule: "#2563eb",
   todo: "#d97706",
   visit: "#059669",
@@ -399,7 +399,7 @@ export default function Dashboard({ pet, lw, tgt, setModal, setTab, togTodo, del
             transition: "all .2s",
           }}
         >
-          <AlertTriangle size={22} color={T.rd} />
+          <Siren size={22} color={T.rd} />
           <div style={{ fontSize: 13, fontWeight: 800, color: T.rd, marginTop: 2 }}>
             緊急連絡
           </div>
