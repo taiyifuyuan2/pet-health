@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronDown, Check, Plus } from "lucide-react";
-import { T, calcAge } from "../theme";
+import { ChevronDown, Check, Plus, Dog, Cat, Rabbit, Bird, PawPrint } from "lucide-react";
+import { T, calcAge, speciesLabel } from "../theme";
+
+const SPECIES_ICON = { dog: Dog, cat: Cat, rabbit: Rabbit, bird: Bird };
+const SpeciesIcon = ({ species, size = 24, color }) => {
+  const Ic = SPECIES_ICON[species] || PawPrint;
+  return <Ic size={size} color={color} />;
+};
 
 export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }) {
   const [open, setOpen] = useState(false);
@@ -82,7 +88,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ fontSize: 30 }}>{pet?.emoji || "🐾"}</span>
+            <SpeciesIcon species={pet?.species} size={28} color={T.ac} />
           )}
         </div>
 
@@ -127,7 +133,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
               fontWeight: 500,
             }}
           >
-            {pet?.breed} ・ {age}歳 ・ {pet?.sex}
+            {pet?.breed || speciesLabel(pet?.species)} ・ {age}歳 ・ {pet?.sex}
           </div>
 
           {open && (
@@ -192,7 +198,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     ) : (
-                      <span style={{ fontSize: 18 }}>{p.emoji || "🐾"}</span>
+                      <SpeciesIcon species={p.species} size={18} color={pet?.id === p.id ? T.ac : T.tx3} />
                     )}
                   </div>
                   <div style={{ flex: 1, textAlign: "left" }}>
@@ -206,7 +212,7 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
                       {p.name}
                     </div>
                     <div style={{ fontSize: 10, color: T.tx2 }}>
-                      {p.breed} ・ {calcAge(p.birth)}歳
+                      {p.breed || speciesLabel(p.species)} ・ {calcAge(p.birth)}歳
                     </div>
                   </div>
                   {pet?.id === p.id && (
@@ -262,6 +268,110 @@ export default function Header({ pet, pets, setPid, onAddPet, onPhotoClick, lw }
           <div style={{ fontSize: 9, color: T.tx3, marginTop: 4, fontWeight: 600 }}>現在の体重</div>
         </div>
       </div>
+
+      {pets.length > 1 && (
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            marginTop: 14,
+            paddingTop: 12,
+            borderTop: `1px solid ${T.bdr}33`,
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            position: "relative",
+          }}
+        >
+          {pets.map((p) => {
+            const active = pet?.id === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => setPid(p.id)}
+                className="btnTap"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  flexShrink: 0,
+                  minWidth: 52,
+                }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: active ? T.acL : T.input,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: `2.5px solid ${active ? T.ac : "transparent"}`,
+                    transition: "all .2s",
+                  }}
+                >
+                  {p.photo ? (
+                    <img src={p.photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <SpeciesIcon species={p.species} size={18} color={active ? T.ac : T.tx3} />
+                  )}
+                </div>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: active ? 800 : 600,
+                    color: active ? T.ac : T.tx3,
+                    maxWidth: 56,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {p.name}
+                </span>
+              </button>
+            );
+          })}
+          <button
+            onClick={onAddPet}
+            className="btnTap"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              flexShrink: 0,
+              minWidth: 52,
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                border: `1.5px dashed ${T.bdr2}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Plus size={16} color={T.tx3} />
+            </div>
+            <span style={{ fontSize: 9, color: T.tx3, fontWeight: 600 }}>追加</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

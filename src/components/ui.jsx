@@ -401,6 +401,73 @@ export function Toast({ show, text }) {
   );
 }
 
+export function OfflineBanner() {
+  const [offline, setOffline] = useState(false);
+  useEffect(() => {
+    const on = () => setOffline(false);
+    const off = () => setOffline(true);
+    setOffline(!navigator.onLine);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+  if (!offline) return null;
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        background: "#f59e0b",
+        color: "#fff",
+        textAlign: "center",
+        padding: "8px 16px",
+        fontSize: 12,
+        fontWeight: 700,
+        zIndex: 300,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      }}
+    >
+      オフラインです — ネットワーク接続を確認してください
+    </div>
+  );
+}
+
+export function ErrorToast({ message, onClose }) {
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(onClose, 5000);
+    return () => clearTimeout(t);
+  }, [message, onClose]);
+  if (!message) return null;
+  return (
+    <div
+      className="toast"
+      style={{
+        position: "fixed",
+        bottom: 88,
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: T.rd,
+        color: "#fff",
+        padding: "10px 20px",
+        borderRadius: 24,
+        fontSize: 12,
+        fontWeight: 600,
+        zIndex: 160,
+        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+        maxWidth: "90%",
+        textAlign: "center",
+        cursor: "pointer",
+      }}
+      onClick={onClose}
+    >
+      {message}
+    </div>
+  );
+}
+
 export function Skeleton({ h = 80 }) {
   return (
     <div

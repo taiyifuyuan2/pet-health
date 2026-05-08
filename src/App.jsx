@@ -3,10 +3,12 @@ import { supabase } from "./lib/supabase";
 import { fetchPets, seedInitialData, uploadPhoto, fetchEmergencyContacts, uploadDocumentPhoto } from "./lib/data";
 import Auth from "./components/Auth";
 import { T, css, todayStr, calcAge, daysTo } from "./theme";
-import { Btn, Toast, Skeleton } from "./components/ui";
+import { Btn, Toast, Skeleton, OfflineBanner, ErrorToast } from "./components/ui";
 import Header from "./components/Header";
 import BottomNav from "./components/BottomNav";
 import Modals from "./components/Modals";
+import Onboarding from "./components/Onboarding";
+import PremiumModal from "./components/Premium";
 import Dashboard from "./components/tabs/Dashboard";
 import Meds from "./components/tabs/Meds";
 import Labs from "./components/tabs/Labs";
@@ -27,6 +29,9 @@ export default function App() {
   const [modal, setModal] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(() => !localStorage.getItem("onboarding_done"));
+  const [showPremium, setShowPremium] = useState(false);
   const fileRef = useRef(null);
 
   const pet = pets.find((p) => p.id === pid) || pets[0];
@@ -78,6 +83,7 @@ export default function App() {
       setEmergencyContacts(contacts);
     } catch (err) {
       console.error("Failed to reload:", err);
+      setErrorMsg("データの読み込みに失敗しました。ネットワーク接続を確認してください。");
     } finally {
       setSaving(false);
     }
@@ -365,6 +371,7 @@ export default function App() {
           name: d.name,
           emoji: d.emoji,
           birth: d.birth,
+          species: d.species || "dog",
           breed: d.breed,
           sex: d.sex,
         })
@@ -494,6 +501,7 @@ export default function App() {
           name: d.name,
           emoji: d.emoji,
           birth: d.birth,
+          species: d.species || pet.species || "dog",
           breed: d.breed,
           sex: d.sex,
         })
@@ -506,6 +514,17 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      // Delete all user's pets (cascades related data via Supabase)
+      await supabase.from("pets").delete().eq("user_id", user.id);
+      await supabase.from("emergency_contacts").delete().eq("user_id", user.id);
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Account deletion failed:", err);
+    }
   };
 
   // Loading states
@@ -521,7 +540,17 @@ export default function App() {
     );
   }
 
-  if (!user) return <Auth />;
+  if (!user) {
+    if (showOnboarding) {
+      return (
+        <>
+          <style>{css}</style>
+          <Onboarding onComplete={() => { localStorage.setItem("onboarding_done", "1"); setShowOnboarding(false); }} />
+        </>
+      );
+    }
+    return <Auth />;
+  }
 
   if (!loaded) {
     return (
@@ -638,13 +667,18 @@ export default function App() {
               setModal={setModal}
               handleLogout={handleLogout}
               delPet={delPet}
+              onDeleteAccount={handleDeleteAccount}
+              onShowPremium={() => setShowPremium(true)}
             />
           )}
         </div>
       </div>
 
       <BottomNav tab={tab} setTab={setTab} />
+      <OfflineBanner />
       <Toast show={saving} text="保存中..." />
+      <ErrorToast message={errorMsg} onClose={() => setErrorMsg("")} />
+      {showPremium && <PremiumModal onClose={() => setShowPremium(false)} />}
 
       <Modals
         modal={modal}

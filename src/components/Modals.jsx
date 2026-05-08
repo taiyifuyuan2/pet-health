@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Phone, Upload } from "lucide-react";
 import { Modal, Inp, Sel, Btn } from "./ui";
-import { T, todayStr } from "../theme";
+import { T, todayStr, SPECIES, speciesEmoji } from "../theme";
 
 function AddDocumentBody({ addDocument, setModal }) {
   const [file, setFile] = useState(null);
@@ -378,13 +378,22 @@ export default function Modals({
   }
 
   if (modal.type === "addPet") {
-    const s = { name: "", emoji: "🐾", birth: "", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済" };
+    const s = { name: "", emoji: "🐾", birth: "", species: "dog", breed: "", sex: "♂ 去勢済" };
+    const speciesOptions = SPECIES.map((sp) => `${sp.emoji} ${sp.label}`);
+    const breedLabels = { dog: "犬種", cat: "猫種", rabbit: "品種", hamster: "品種", bird: "品種", reptile: "品種", other: "品種" };
     return (
       <Modal title="🐾 ペット追加" onClose={() => setModal(null)}>
         <Inp label="名前" placeholder="例: チョコちゃん" onChange={(e) => (s.name = e.target.value)} />
-        <Inp label="絵文字" defaultValue="🐾" onChange={(e) => (s.emoji = e.target.value)} />
+        <Sel
+          label="種類"
+          options={speciesOptions}
+          onChange={(e) => {
+            const sp = SPECIES.find((x) => e.target.value.includes(x.label));
+            if (sp) { s.species = sp.id; s.emoji = sp.emoji; }
+          }}
+        />
         <Inp label="誕生日" type="date" onChange={(e) => (s.birth = e.target.value)} />
-        <Inp label="犬種" defaultValue="ミニチュアダックスフンド" onChange={(e) => (s.breed = e.target.value)} />
+        <Inp label={breedLabels[s.species] || "品種"} placeholder="例: ミニチュアダックスフンド" onChange={(e) => (s.breed = e.target.value)} />
         <Sel
           label="性別"
           options={["♂ 去勢済", "♂ 未去勢", "♀ 避妊済", "♀ 未避妊"]}
@@ -546,13 +555,25 @@ export default function Modals({
   }
 
   if (modal.type === "editPet" && pet) {
-    const s = { name: pet.name, emoji: pet.emoji, birth: pet.birth, breed: pet.breed, sex: pet.sex };
+    const speciesOptions = SPECIES.map((sp) => `${sp.emoji} ${sp.label}`);
+    const currentSpeciesLabel = SPECIES.find((sp) => sp.id === (pet.species || "dog"));
+    const defaultSpeciesOption = currentSpeciesLabel ? `${currentSpeciesLabel.emoji} ${currentSpeciesLabel.label}` : speciesOptions[0];
+    const breedLabels = { dog: "犬種", cat: "猫種" };
+    const s = { name: pet.name, emoji: pet.emoji, birth: pet.birth, species: pet.species || "dog", breed: pet.breed, sex: pet.sex };
     return (
       <Modal title="✏ プロフィール編集" onClose={() => setModal(null)}>
         <Inp label="名前" defaultValue={pet.name} onChange={(e) => (s.name = e.target.value)} />
-        <Inp label="絵文字" defaultValue={pet.emoji} onChange={(e) => (s.emoji = e.target.value)} />
+        <Sel
+          label="種類"
+          options={speciesOptions}
+          defaultValue={defaultSpeciesOption}
+          onChange={(e) => {
+            const sp = SPECIES.find((x) => e.target.value.includes(x.label));
+            if (sp) { s.species = sp.id; s.emoji = sp.emoji; }
+          }}
+        />
         <Inp label="誕生日" type="date" defaultValue={pet.birth} onChange={(e) => (s.birth = e.target.value)} />
-        <Inp label="犬種" defaultValue={pet.breed} onChange={(e) => (s.breed = e.target.value)} />
+        <Inp label={breedLabels[s.species] || "品種"} defaultValue={pet.breed} onChange={(e) => (s.breed = e.target.value)} />
         <Sel
           label="性別"
           options={["♂ 去勢済", "♂ 未去勢", "♀ 避妊済", "♀ 未避妊"]}

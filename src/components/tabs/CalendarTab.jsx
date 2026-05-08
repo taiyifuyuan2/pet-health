@@ -1,6 +1,7 @@
-import { Stethoscope } from "lucide-react";
+import { Stethoscope, Printer } from "lucide-react";
 import { T, todayStr } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Badge, AddBtn } from "../ui";
+import { exportVetReport } from "../../lib/export";
 
 export default function CalendarTab({ pet, setModal, delVisit }) {
   const visits = (pet.visits || []).slice().sort((a, b) => b.date.localeCompare(a.date));
@@ -8,6 +9,25 @@ export default function CalendarTab({ pet, setModal, delVisit }) {
   return (
     <>
       <Sec icon={<Stethoscope size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addVisit" })} />}>通院記録</Sec>
+      <Card
+        onClick={() => exportVetReport(pet)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 16px",
+          cursor: "pointer",
+          marginBottom: 14,
+        }}
+      >
+        <Printer size={18} color={T.ac} />
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700 }}>獣医さん用レポート</div>
+          <div style={{ fontSize: 10, color: T.tx2, marginTop: 1, fontWeight: 500 }}>
+            最近の状態を1ページにまとめてPDF出力
+          </div>
+        </div>
+      </Card>
       {!visits.length ? (
         <Empty icon="🏥" text="通院記録はまだありません" />
       ) : (

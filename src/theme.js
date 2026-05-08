@@ -72,3 +72,17 @@ export const petColor = (pets, petId) => {
   const i = pets.findIndex((p) => p.id === petId);
   return PET_COLORS[(i < 0 ? 0 : i) % PET_COLORS.length];
 };
+
+export const SPECIES = [
+  { id: "dog", label: "犬", icon: "Dog", emoji: "🐕" },
+  { id: "cat", label: "猫", icon: "Cat", emoji: "🐈" },
+  { id: "rabbit", label: "うさぎ", icon: "Rabbit", emoji: "🐇" },
+  { id: "hamster", label: "ハムスター", icon: "PawPrint", emoji: "🐹" },
+  { id: "bird", label: "鳥", icon: "Bird", emoji: "🐦" },
+  { id: "reptile", label: "爬虫類", icon: "PawPrint", emoji: "🦎" },
+  { id: "other", label: "その他", icon: "PawPrint", emoji: "🐾" },
+];
+
+export const getSpecies = (id) => SPECIES.find((s) => s.id === id) || SPECIES[0];
+export const speciesLabel = (id) => getSpecies(id).label;
+export const speciesEmoji = (id) => getSpecies(id).emoji;

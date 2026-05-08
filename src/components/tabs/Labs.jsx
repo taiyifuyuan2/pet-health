@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { FlaskConical, ArrowRight } from "lucide-react";
+import { FlaskConical, ArrowRight, Camera, Sparkles } from "lucide-react";
 import { T } from "../../theme";
-import { Card, Btn, Sec, Empty, DelBtn, Badge, AddBtn } from "../ui";
+import { Card, Btn, Sec, Empty, DelBtn, Badge, AddBtn, Modal, Inp } from "../ui";
 
 function compareResult(curr, prevLab) {
   if (!prevLab) return { isNew: true };
@@ -118,10 +118,82 @@ function ValueBar({ value, refRange, status }) {
 
 export default function Labs({ pet, setModal, delLab }) {
   const [compare, setCompare] = useState(true);
+  const [showOcr, setShowOcr] = useState(false);
+  const [ocrEmail, setOcrEmail] = useState("");
+  const [ocrDone, setOcrDone] = useState(false);
   const labs = pet.labs || [];
   return (
     <>
       <Sec icon={<FlaskConical size={14} color={T.ac} />} action={<AddBtn onClick={() => setModal({ type: "addLab" })} />}>検査結果</Sec>
+      <Card
+        onClick={() => setShowOcr(true)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "14px 16px",
+          cursor: "pointer",
+          background: `linear-gradient(135deg, ${T.acL}, #f0e8ff)`,
+          border: `1.5px solid ${T.ac}22`,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            background: `${T.ac}15`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Camera size={20} color={T.ac} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+            <Sparkles size={14} color={T.ac} /> 写真から入力
+          </div>
+          <div style={{ fontSize: 10, color: T.tx2, marginTop: 2, fontWeight: 500 }}>
+            検査結果用紙を撮影して自動入力（Coming Soon）
+          </div>
+        </div>
+      </Card>
+      {showOcr && (
+        <Modal title="写真から入力" onClose={() => setShowOcr(false)}>
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📸</div>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>
+              この機能はプレミアムプランで近日公開予定です
+            </div>
+            <div style={{ fontSize: 12, color: T.tx2, marginBottom: 20, lineHeight: 1.6 }}>
+              検査結果用紙をカメラで撮影するだけで、<br/>数値を自動で読み取り入力します。
+            </div>
+            {ocrDone ? (
+              <div style={{ background: T.gnB, color: T.gn, padding: "12px 16px", borderRadius: 12, fontSize: 13, fontWeight: 700 }}>
+                登録しました！ 公開時にお知らせします。
+              </div>
+            ) : (
+              <>
+                <Inp
+                  label="公開時に通知を受け取る"
+                  type="email"
+                  placeholder="メールアドレス"
+                  value={ocrEmail}
+                  onChange={(e) => setOcrEmail(e.target.value)}
+                />
+                <Btn
+                  full
+                  onClick={() => { if (ocrEmail) setOcrDone(true); }}
+                >
+                  通知を受け取る
+                </Btn>
+              </>
+            )}
+          </div>
+        </Modal>
+      )}
       {labs.length >= 2 && (
         <Card
           style={{

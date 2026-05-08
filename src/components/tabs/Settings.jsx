@@ -1,9 +1,20 @@
 import {
   PawPrint, Stethoscope, User, AlertTriangle, Camera, LogOut, Pencil,
-  Target, Phone, MapPin, Siren, FileText, Plus,
+  Target, Phone, MapPin, Siren, FileText, Plus, Dog, Cat, Rabbit, Bird,
+  Shield, ScrollText, ExternalLink, Download, Printer, Cloud, CheckCircle, Users,
 } from "lucide-react";
-import { T, calcAge } from "../../theme";
+import { T, calcAge, speciesLabel } from "../../theme";
 import { Card, Btn, Sec, Bar, DelBtn, AddBtn, Empty } from "../ui";
+import {
+  exportWeightsCsv, exportLabsCsv, exportVisitsCsv, exportMedsCsv, exportVetReport,
+} from "../../lib/export";
+import { PremiumBanner } from "../Premium";
+
+const SPECIES_ICON = { dog: Dog, cat: Cat, rabbit: Rabbit, bird: Bird };
+const SpeciesIcon = ({ species, size = 24, color }) => {
+  const Ic = SPECIES_ICON[species] || PawPrint;
+  return <Ic size={size} color={color} />;
+};
 
 const DOC_TYPE_LABELS = {
   rabies: "狂犬病ワクチン",
@@ -17,10 +28,12 @@ export default function Settings({
   pet, pets, user, age, lw, tgt,
   emergencyContacts = [],
   delContact, delDocument,
-  fileRef, setModal, handleLogout, delPet,
+  fileRef, setModal, handleLogout, delPet, onDeleteAccount, onShowPremium,
 }) {
   return (
     <>
+      <PremiumBanner onClick={onShowPremium} />
+
       <Sec icon={<PawPrint size={14} color={T.ac} />}>プロフィール</Sec>
       <Card>
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -46,7 +59,7 @@ export default function Settings({
               <img src={pet.photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <div style={{ textAlign: "center", color: T.ac }}>
-                <Camera size={26} />
+                <SpeciesIcon species={pet.species} size={32} color={T.ac} />
                 <div style={{ fontSize: 8, color: T.tx3, marginTop: 2 }}>タップ</div>
               </div>
             )}
@@ -54,7 +67,7 @@ export default function Settings({
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.01em" }}>{pet.name}</div>
             <div style={{ fontSize: 11, color: T.tx2, marginTop: 4, fontWeight: 600 }}>
-              {pet.breed} ・ {age}歳 ・ {pet.sex}
+              {speciesLabel(pet.species)}{pet.breed ? `（${pet.breed}）` : ""} ・ {age}歳 ・ {pet.sex}
             </div>
             <div style={{ fontSize: 10, color: T.tx3, marginTop: 2 }}>🎂 {pet.birth}</div>
           </div>
@@ -286,6 +299,92 @@ export default function Settings({
         </div>
       )}
 
+      <Sec icon={<Cloud size={14} color={T.gn} />}>データ同期</Sec>
+      <Card>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: T.gnB,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <CheckCircle size={20} color={T.gn} />
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.gn }}>クラウドに自動保存中</div>
+            <div style={{ fontSize: 10, color: T.tx3, marginTop: 2, fontWeight: 500 }}>
+              機種変更しても安心です。データはリアルタイムで同期されています。
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Sec icon={<Users size={14} color={T.bl} />}>家族共有</Sec>
+      <Card>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: `${T.bl}15`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Users size={20} color={T.bl} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700 }}>家族とデータを共有</div>
+            <div style={{ fontSize: 10, color: T.tx3, marginTop: 2, fontWeight: 500 }}>
+              家族を招待して、投薬や食事の記録を共有しましょう
+            </div>
+          </div>
+        </div>
+        <Btn
+          full
+          v="soft"
+          onClick={() => setModal({ type: "inviteFamily" })}
+          style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}
+        >
+          <Plus size={14} /> 家族を招待（Coming Soon）
+        </Btn>
+      </Card>
+
+      <Sec icon={<Download size={14} color={T.bl} />}>データエクスポート</Sec>
+      <Card>
+        <div style={{ fontSize: 11, color: T.tx2, marginBottom: 12, fontWeight: 500, lineHeight: 1.6 }}>
+          データをCSV形式でダウンロード、または獣医さん用レポートをPDFで出力できます。
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <Btn small v="gh" onClick={() => exportWeightsCsv(pet)} style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+            <Download size={12} /> 体重CSV
+          </Btn>
+          <Btn small v="gh" onClick={() => exportLabsCsv(pet)} style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+            <Download size={12} /> 検査CSV
+          </Btn>
+          <Btn small v="gh" onClick={() => exportVisitsCsv(pet)} style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+            <Download size={12} /> 通院CSV
+          </Btn>
+          <Btn small v="gh" onClick={() => exportMedsCsv(pet)} style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center" }}>
+            <Download size={12} /> 投薬CSV
+          </Btn>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <Btn full v="soft" onClick={() => exportVetReport(pet)} style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+            <Printer size={14} /> 獣医さん用レポートを出力
+          </Btn>
+        </div>
+      </Card>
+
       <Sec icon={<User size={14} color={T.ac} />}>アカウント</Sec>
       <Card>
         <div
@@ -333,7 +432,65 @@ export default function Settings({
         </>
       )}
 
-      <div style={{ marginTop: 24 }}>
+      <Sec icon={<Shield size={14} color={T.tx2} />}>法的情報</Sec>
+      <Card>
+        <a
+          href="/privacy.html"
+          target="_blank"
+          rel="noopener"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 0",
+            borderBottom: `1px solid ${T.bdr}`,
+            textDecoration: "none",
+            color: T.tx,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Shield size={16} color={T.tx2} />
+            <span style={{ fontSize: 13, fontWeight: 700 }}>プライバシーポリシー</span>
+          </div>
+          <ExternalLink size={14} color={T.tx3} />
+        </a>
+        <a
+          href="/terms.html"
+          target="_blank"
+          rel="noopener"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 0",
+            textDecoration: "none",
+            color: T.tx,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ScrollText size={16} color={T.tx2} />
+            <span style={{ fontSize: 13, fontWeight: 700 }}>利用規約</span>
+          </div>
+          <ExternalLink size={14} color={T.tx3} />
+        </a>
+      </Card>
+
+      <div
+        style={{
+          padding: "12px 16px",
+          background: T.amB,
+          borderRadius: 12,
+          fontSize: 11,
+          color: T.am,
+          fontWeight: 600,
+          lineHeight: 1.6,
+          marginBottom: 12,
+        }}
+      >
+        本アプリは獣医師による医療アドバイスの代替ではありません。ペットの健康に関する判断は、必ず獣医師にご相談ください。
+      </div>
+
+      <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10 }}>
         <Btn
           full
           v="dn"
@@ -342,6 +499,27 @@ export default function Settings({
         >
           <LogOut size={14} /> ログアウト
         </Btn>
+        <button
+          onClick={() => {
+            if (confirm("アカウントを削除すると、全てのデータが失われます。本当に削除しますか？")) {
+              if (confirm("この操作は取り消せません。最終確認：本当にアカウントを削除しますか？")) {
+                if (onDeleteAccount) onDeleteAccount();
+              }
+            }
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: T.tx3,
+            fontSize: 11,
+            cursor: "pointer",
+            fontWeight: 600,
+            padding: 8,
+            textAlign: "center",
+          }}
+        >
+          アカウントを削除
+        </button>
       </div>
     </>
   );

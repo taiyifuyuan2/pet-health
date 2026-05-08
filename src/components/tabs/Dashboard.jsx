@@ -1,9 +1,10 @@
 import {
   Pill, Target, Pencil, Check, Cake, Calendar as CalIcon,
-  ListChecks, ChevronRight, Syringe, Siren, Phone,
+  ListChecks, ChevronRight, Syringe, Siren, Phone, Heart, AlertTriangle,
 } from "lucide-react";
 import { T, daysTo, todayStr, calcAge } from "../../theme";
 import { Card, Btn, Sec, Empty, DelBtn, Bar, Badge, AddBtn } from "../ui";
+import { findBreedInfo } from "../../lib/breeds";
 
 function dogToHumanAge(dogAge) {
   if (dogAge <= 0) return 0;
@@ -415,6 +416,51 @@ export default function Dashboard({ pet, lw, tgt, setModal, setTab, togTodo, del
       )}
 
       {pet.birth && <AgeCard pet={pet} />}
+
+      {(() => {
+        const info = findBreedInfo(pet.species, pet.breed);
+        if (!info) return null;
+        return (
+          <Card>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <Heart size={16} color={T.ac} />
+              <span style={{ fontSize: 13, fontWeight: 800 }}>{pet.breed}の健康ガイド</span>
+            </div>
+            <div style={{
+              display: "flex", gap: 16, marginBottom: 10,
+              padding: "10px 14px", background: T.acL, borderRadius: 12,
+            }}>
+              <div>
+                <div style={{ fontSize: 10, color: T.tx2, fontWeight: 600 }}>適正体重</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: T.ac }}>
+                  {info.weight[0]}〜{info.weight[1]}
+                  <span style={{ fontSize: 11, color: T.tx2, fontWeight: 600 }}>kg</span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 10, color: T.tx2, fontWeight: 600 }}>平均寿命</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: T.tx }}>
+                  {info.life[0]}〜{info.life[1]}
+                  <span style={{ fontSize: 11, color: T.tx2, fontWeight: 600 }}>歳</span>
+                </div>
+              </div>
+            </div>
+            {info.conditions.length > 0 && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
+                  <AlertTriangle size={12} color={T.am} />
+                  <span style={{ fontSize: 10, color: T.tx2, fontWeight: 700 }}>注意すべき疾患</span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {info.conditions.map((c) => (
+                    <Badge key={c} text={c} bg={T.amB} color={T.am} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {lw > 0 && pet.weights?.[0] && (
         <Card>

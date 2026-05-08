@@ -101,6 +101,7 @@ export async function fetchPets(userId) {
     // Map DB fields to app fields
     pet.photo = pet.photo_url;
     pet.birth = pet.birth;
+    pet.species = pet.species || 'dog';
     pet.emoji = pet.emoji || '🐾';
     pet.target_weight = pet.target_weight != null ? parseFloat(pet.target_weight) : 5.0;
     pet.clinic_name = pet.clinic_name || 'みなみ動物クリニック';
@@ -114,7 +115,7 @@ export async function fetchPets(userId) {
 // Initial data for first-time users
 const INIT_PETS = [
   {
-    name: "ラムちゃん", emoji: "🐕", birth: "2021-08-07", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
+    name: "ラムちゃん", emoji: "🐕", birth: "2021-08-07", species: "dog", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
     conditions: [
       { name: "心肥大", sev: "要経過観察", note: "レントゲンで確認。エコー未実施。" },
       { name: "高脂血症", sev: "軽度", note: "CPK 226。食事管理必要。" },
@@ -175,7 +176,7 @@ const INIT_PETS = [
     ],
   },
   {
-    name: "モカちゃん", emoji: "🐶", birth: "2023-06-06", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
+    name: "モカちゃん", emoji: "🐶", birth: "2023-06-06", species: "dog", breed: "ミニチュアダックスフンド", sex: "♂ 去勢済",
     conditions: [{ name: "肥満気味", sev: "要注意", note: "7.1kg。適正4.5-5kg。" }],
     meds: [], labs: [], visits: [],
     weights: [{ date: "2026-04-14", value: 7.1 }],
@@ -200,6 +201,7 @@ export async function seedInitialData(userId) {
         name: petData.name,
         emoji: petData.emoji,
         birth: petData.birth,
+        species: petData.species || 'dog',
         breed: petData.breed,
         sex: petData.sex,
       })
